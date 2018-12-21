@@ -9,12 +9,14 @@
 #include "RF24.h"
 
 #include "ThingSpeakUtil.h"
+#include "WsnCommon.h"
 
 
 enum SensorStatusCode: int8_t{
 	NO_DATA_CHANGED = 0,
 	NEW_DATA_ARRIVED = 1,
-	BME_SENSOR_ERROR = -1
+	BME_SENSOR_ERROR = -1,
+	RADIO_CONFIG_ERROR = -2
 	// TODO - error codes
 }; 
 
@@ -52,41 +54,41 @@ class Sensor{
 };
 
 
-class LocalBMESensor : public Sensor{
+class BMESensorAdapter : public Sensor{
 	private:
-	Adafruit_BME280 bme;
+	Adafruit_BME280 *bme;
 	float elevation;
 	int8_t nodeId;
 	uint32_t messageCount;
 	byte sensorSet; 
 
 	public:
-	LocalBMESensor(Adafruit_BME280 &bmeReference, float elevation, int8_t nodeId);
+	BMESensorAdapter(Adafruit_BME280 *bme, const float elevation, const int8_t nodeId);
 	SensorReadStatus read(SensorData &sensorDataOut);
 };	
 
-class RadioSensor : public Sensor{
+class RadioSensorAdapter : public Sensor{
 	private:
-	RF24 radio;
+	RF24 *radio;
 
 	public:
-	RadioSensor(SensorType sensorType, RF24 &radio);
+	RadioSensorAdapter(RF24 *radio);
 	SensorReadStatus read(SensorData &sensorDataOut);
 };	
 
 class ThingSpeakSensor : public Sensor{
 	private:
 
-	WiFiClient client;
+	WiFiClient *client;
 	int8_t nodeId;
-	char readKey[20];
+	char *readKey;
 	char channel[8];
 	uint8_t fieldMapping[5];
-	byte sensorSet; 
-	ThingSpeakUtil thingSpeakUtil;
+	byte sensorSet = 0; 
+//	ThingSpeakUtil thingSpeakUtil;
 
 	public:
-	ThingSpeakSensor(SensorType sensorType, WiFiClient &client, int8_t nodeId, char* readKey, char *channel, uint8_t *fieldMapping);
+	ThingSpeakSensor(WiFiClient *client, const int8_t nodeId, const char* readKey, const char *channel, const uint8_t *fieldMapping);
 	SensorReadStatus read(SensorData &sensorDataOut);
 };	
 
@@ -99,7 +101,7 @@ class SensorDataCollector{
 	};
 
 	private:
-	RadioSensor radioSensor;
+	Sensor radioSensor;
 	ScheduledSensor scheduledSensorArr[5];
 	SensorData sensorDataArr[10];
 	SensorReadStatus lastSensorReadStatus;
@@ -108,7 +110,7 @@ class SensorDataCollector{
 
 	public:
 	SensorDataCollector();
-	void setRadioSensor(RadioSensor radioSensor);
+	void setRadioSensor(RadioSensorAdapter radioSensor);
 	void addSensor(Sensor sensor, uint32_t repeatMs);
 	void process();
 	SensorReadStatus getStatus();
