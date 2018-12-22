@@ -16,8 +16,8 @@ enum SensorStatusCode: int8_t{
 	NO_DATA_CHANGED = 0,
 	NEW_DATA_ARRIVED = 1,
 	BME_SENSOR_ERROR = -1,
-	RADIO_CONFIG_ERROR = -2
-	// TODO - error codes
+	RADIO_CONFIG_ERROR = -2,
+	THING_SPEAK_READ_ERROR = -3
 }; 
 
 enum SensorType: uint8_t{
@@ -71,6 +71,8 @@ class RadioSensorAdapter : public Sensor{
 	private:
 	RF24 *radio;
 
+	void sensorMessage2sensorData(WsnSensorNodeMessage &in, SensorData &out);
+
 	public:
 	RadioSensorAdapter(RF24 *radio);
 	SensorReadStatus read(SensorData &sensorDataOut);
@@ -80,15 +82,19 @@ class ThingSpeakSensor : public Sensor{
 	private:
 
 	WiFiClient *client;
+	const char* thingSpeakAddress;
 	int8_t nodeId;
-	char *readKey;
-	char channel[8];
-	uint8_t fieldMapping[5];
+	const char *readKey;
+	const char *channel;
+	const uint8_t *fieldMapping;
 	byte sensorSet = 0; 
-//	ThingSpeakUtil thingSpeakUtil;
+	ThingSpeakUtil thingSpeakUtil;
+
+	void json2SensorData(char* jsonString, SensorData &sensorDataOut);
+	void getJsonFieldValue(char* jsonString, int8_t fieldNo, char* dst);
 
 	public:
-	ThingSpeakSensor(WiFiClient *client, const int8_t nodeId, const char* readKey, const char *channel, const uint8_t *fieldMapping);
+	ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const uint8_t *fieldMapping);
 	SensorReadStatus read(SensorData &sensorDataOut);
 };	
 

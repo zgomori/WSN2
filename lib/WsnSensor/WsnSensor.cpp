@@ -59,15 +59,7 @@ SensorReadStatus RadioSensorAdapter::read(SensorData &sensorDataOut){
 	 	radio->read(&sensorNodeMessage, sizeof(WsnSensorNodeMessage));
 
 		if(sensorNodeMessage.nodeID == rfPipeNum){
-
-			sensorDataOut.nodeId = sensorNodeMessage.nodeID;
-			sensorDataOut.sensorSet = sensorNodeMessage.sensorSet;
-			sensorDataOut.temperature = sensorNodeMessage.temperature;
-			sensorDataOut.humidity = sensorNodeMessage.humidity;
-			sensorDataOut.airPressure = sensorNodeMessage.pressure;
-			sensorDataOut.batteryVoltage = sensorNodeMessage.batteryVoltage;
-			sensorDataOut.messageCount = sensorNodeMessage.messageCnt;
-			sensorDataOut.lastUpdateTime = now();	
+			sensorMessage2sensorData(sensorNodeMessage, sensorDataOut);
 
 			lastReadStatus.nodeId = sensorNodeMessage.nodeID;
 			lastReadStatus.statusCode = NEW_DATA_ARRIVED;
@@ -106,17 +98,29 @@ SensorReadStatus RadioSensorAdapter::read(SensorData &sensorDataOut){
 	return lastReadStatus;
 }
 
+void RadioSensorAdapter::sensorMessage2sensorData(WsnSensorNodeMessage &in, SensorData &out){
+	out.nodeId = 		in.nodeID;
+	out.sensorSet = 	in.sensorSet;
+	out.temperature = in.temperature;
+	out.humidity = 	in.humidity;
+	out.airPressure = in.pressure;
+	out.batteryVoltage = in.batteryVoltage;
+	out.messageCount = in.messageCnt;
+	out.lastUpdateTime = now();	
+}
+
 /**********************************
  * ThingSpeakSensor
  * ********************************/
-ThingSpeakSensor::ThingSpeakSensor(WiFiClient *client, const int8_t nodeId, const char* readKey, const char *channel, const uint8_t *fieldMapping){
-
+ThingSpeakSensor::ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const uint8_t *fieldMapping){
 	this->sensorType = THING_SPEAK_SENSOR;
 	this->client = client;
+	this->thingSpeakAddress = thingSpeakAddress;
 	this->nodeId = nodeId;
-	*(this->readKey) = *readKey;
-	*(this->channel) = *channel;
-	*(this->fieldMapping) = *fieldMapping;
+	this->readKey = readKey;
+	this->channel = channel;
+	this->fieldMapping = fieldMapping;
+	this->thingSpeakUtil.init(client, this->thingSpeakAddress);
 
 	for(uint8_t i=0; i < 5; i++){
 		if (fieldMapping[i] != -1){
@@ -127,13 +131,78 @@ ThingSpeakSensor::ThingSpeakSensor(WiFiClient *client, const int8_t nodeId, cons
 
 
 SensorReadStatus ThingSpeakSensor::read(SensorData &sensorDataOut){
+	char jsonResponse[255];
+	bool tsGetStatus = thingSpeakUtil.get(readKey, channel, jsonResponse); 
+	if(tsGetStatus){
+		json2SensorData(jsonResponse, sensorDataOut);
+		sensorDataOut.nodeId = this->nodeId;
+		sensorDataOut.sensorSet = 	this->sensorSet;
+		sensorDataOut.lastUpdateTime = now();
 
+		lastReadStatus.nodeId = this->nodeId;
+		lastReadStatus.statusCode = NEW_DATA_ARRIVED;
+		strcpy(lastReadStatus.statusMessage, '\0');
+	}
+	else{
+		lastReadStatus.nodeId = this->nodeId;
+		lastReadStatus.statusCode = THING_SPEAK_READ_ERROR;
+		strcpy(lastReadStatus.statusMessage, "Thing Speak read error");
+	}
+
+	return lastReadStatus;
 }
+
+void ThingSpeakSensor::json2SensorData(char* jsonString, SensorData &sensorDataOut){
+	char jsonValue[10];
+	for(uint8_t i=0; i < 5; i++){
+		int8_t fieldNo = fieldMapping[i];
+		if (fieldNo != -1){
+			getJsonFieldValue(jsonString, fieldNo,  jsonValue);
+
+			switch(i) {
+   			case WSN_TEMPERATURE :
+      			sensorDataOut.temperature = atof(jsonValue);
+      			break;
+   			case WSN_HUMIDITY :
+      			sensorDataOut.humidity = atof(jsonValue);
+      			break;
+   			case WSN_PRESSURE :
+      			sensorDataOut.airPressure = atof(jsonValue);
+      			break;
+   			case WSN_BATTERY :
+      			sensorDataOut.batteryVoltage = atof(jsonValue);
+      			break;
+   			case WSN_MESSAGES :
+      			sensorDataOut.messageCount = atof(jsonValue);
+      			break;
+			}	 
+		}
+	}
+}  
+
+void ThingSpeakSensor::getJsonFieldValue(char* jsonString, int8_t fieldNo, char* dst){
+	char key[]="\"fieldX\"";
+	key[6] = '0' + fieldNo;
+	char* src = strstr(jsonString+45, key);
+	dst[0] = 0;
+	if(src){
+		//  "fieldX":"
+		//            ^ position src + 10
+		src = src + 10;
+		uint8_t i = 0;
+		while( (src[i] != 0) && (src[i] != '\"') && (i < 9)) {
+			dst[i] = src[i];
+			i++;  
+		}
+		dst[i] = 0;
+	}
+}
+
+
 /**********************************
  * SensorDataCollector
  * ********************************/
 SensorDataCollector::SensorDataCollector(){
-
 }
 
 void SensorDataCollector::setRadioSensor(RadioSensorAdapter radioSensor){
