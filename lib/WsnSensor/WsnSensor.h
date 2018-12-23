@@ -49,7 +49,8 @@ class Sensor{
 	SensorReadStatus lastReadStatus;
 	
 	public:
-	virtual SensorReadStatus read(SensorData &sensorDataOut);
+	Sensor();
+	virtual SensorReadStatus read(SensorData &sensorDataOut){};
 	SensorReadStatus getStatus();
 };
 
@@ -81,12 +82,11 @@ class RadioSensorAdapter : public Sensor{
 class ThingSpeakSensor : public Sensor{
 	private:
 
-	WiFiClient *client;
 	const char* thingSpeakAddress;
 	int8_t nodeId;
 	const char *readKey;
 	const char *channel;
-	const uint8_t *fieldMapping;
+	const int8_t *fieldMapping;
 	byte sensorSet = 0; 
 	ThingSpeakUtil thingSpeakUtil;
 
@@ -94,7 +94,7 @@ class ThingSpeakSensor : public Sensor{
 	void getJsonFieldValue(char* jsonString, int8_t fieldNo, char* dst);
 
 	public:
-	ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const uint8_t *fieldMapping);
+	ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const int8_t *fieldMapping);
 	SensorReadStatus read(SensorData &sensorDataOut);
 };	
 

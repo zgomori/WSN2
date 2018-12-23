@@ -1,5 +1,14 @@
 #include "WsnSensor.h"
 
+/**********************************
+ * Sensor
+ * ********************************/
+Sensor::Sensor(){
+
+}
+SensorReadStatus Sensor::getStatus(){
+	return this->lastReadStatus;
+}
 
 /**********************************
  * BMESensorAdapter
@@ -112,9 +121,8 @@ void RadioSensorAdapter::sensorMessage2sensorData(WsnSensorNodeMessage &in, Sens
 /**********************************
  * ThingSpeakSensor
  * ********************************/
-ThingSpeakSensor::ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const uint8_t *fieldMapping){
+ThingSpeakSensor::ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const int8_t *fieldMapping){
 	this->sensorType = THING_SPEAK_SENSOR;
-	this->client = client;
 	this->thingSpeakAddress = thingSpeakAddress;
 	this->nodeId = nodeId;
 	this->readKey = readKey;
