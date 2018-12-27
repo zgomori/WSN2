@@ -70,13 +70,15 @@ class BMESensorAdapter : public Sensor{
 
 class RadioSensorAdapter : public Sensor{
 	private:
-	RF24 *radio;
-
+	RF24 *radio = NULL;
 	void sensorMessage2sensorData(WsnSensorNodeMessage &in, SensorData &out);
 
 	public:
+
 	RadioSensorAdapter(RF24 *radio);
+	RadioSensorAdapter();
 	SensorReadStatus read(SensorData &sensorDataOut);
+	RF24* getRadio();
 };	
 
 class ThingSpeakSensor : public Sensor{
@@ -101,28 +103,32 @@ class ThingSpeakSensor : public Sensor{
 class SensorDataCollector{
 	struct ScheduledSensor{
 		Sensor sensor;
-		uint32_t lastRead;
 		uint32_t repeatMs;
-		uint32_t nextRead;
+		uint32_t lastRead;
 	};
 
 	private:
-	Sensor radioSensor;
-	ScheduledSensor scheduledSensorArr[5];
+	RadioSensorAdapter radioSensor;
+	static const uint8_t MAX_SCHEDULED_SENSORS = 5; 
+	ScheduledSensor scheduledSensorArr[MAX_SCHEDULED_SENSORS];
 	SensorData sensorDataArr[10];
 	SensorReadStatus lastSensorReadStatus;
-	uint8_t nextFreeScheduledSensorArrIdx = 0;
-	uint8_t nextReadIdx; 
+	uint8_t scheduledSensorCnt = 0;
+	uint8_t nextReadSensorIdx = 0; 
+
+	void setNextScheduledSensor();
+	int32_t getMsToRead(uint8_t idx);
 
 	public:
 	SensorDataCollector();
 	void setRadioSensor(RadioSensorAdapter radioSensor);
 	void addSensor(Sensor sensor, uint32_t repeatMs);
-	void process();
+	SensorReadStatus process();
 	SensorReadStatus getStatus();
 	SensorData getSensorData(int8_t nodeId);
 };	
 
+extern time_t now(); 
 
 #endif // WSN_SENSOR_H
 

@@ -4,7 +4,6 @@
  * Sensor
  * ********************************/
 Sensor::Sensor(){
-
 }
 SensorReadStatus Sensor::getStatus(){
 	return this->lastReadStatus;
@@ -46,19 +45,25 @@ SensorReadStatus BMESensorAdapter::read(SensorData &sensorDataOut){
 		sensorDataOut.messageCount = this->messageCount++;
 
 		lastReadStatus.statusCode = NEW_DATA_ARRIVED;
-		strcpy(lastReadStatus.statusMessage, '\0');
+		strcpy(lastReadStatus.statusMessage, "");
 	}
 
 	return lastReadStatus;
 }
 
 /**********************************
- * RadioSensor
+ * RadioSensorAdapter
  * ********************************/
+RadioSensorAdapter::RadioSensorAdapter(){
+}
 
 RadioSensorAdapter::RadioSensorAdapter(RF24 *radio){
 	this->sensorType = RADIO_SENSOR;
 	this->radio = radio;
+}
+
+RF24* RadioSensorAdapter::getRadio(){
+	return radio;
 }
 
 SensorReadStatus RadioSensorAdapter::read(SensorData &sensorDataOut){
@@ -72,7 +77,7 @@ SensorReadStatus RadioSensorAdapter::read(SensorData &sensorDataOut){
 
 			lastReadStatus.nodeId = sensorNodeMessage.nodeID;
 			lastReadStatus.statusCode = NEW_DATA_ARRIVED;
-			strcpy(lastReadStatus.statusMessage, '\0');
+			strcpy(lastReadStatus.statusMessage, "");
 
 //			sysStatus.set(sysStatus.RADIO, true);
 
@@ -101,7 +106,7 @@ SensorReadStatus RadioSensorAdapter::read(SensorData &sensorDataOut){
 	else{
 			lastReadStatus.nodeId = -1;
 			lastReadStatus.statusCode = NO_DATA_CHANGED;
-			strcpy(lastReadStatus.statusMessage, '\0');
+			strcpy(lastReadStatus.statusMessage, "");
 	}
 	
 	return lastReadStatus;
@@ -149,7 +154,7 @@ SensorReadStatus ThingSpeakSensor::read(SensorData &sensorDataOut){
 
 		lastReadStatus.nodeId = this->nodeId;
 		lastReadStatus.statusCode = NEW_DATA_ARRIVED;
-		strcpy(lastReadStatus.statusMessage, '\0');
+		strcpy(lastReadStatus.statusMessage, "");
 	}
 	else{
 		lastReadStatus.nodeId = this->nodeId;
@@ -218,7 +223,62 @@ void SensorDataCollector::setRadioSensor(RadioSensorAdapter radioSensor){
 }
 
 void SensorDataCollector::addSensor(Sensor sensor, uint32_t repeatMs){
-	if (nextFreeScheduledSensorArrIdx < 4){
-		scheduledSensorArr[++nextFreeScheduledSensorArrIdx] = {sensor, 0, repeatMs, 0};
+	if (scheduledSensorCnt < MAX_SCHEDULED_SENSORS - 1){
+		scheduledSensorArr[++scheduledSensorCnt] = {sensor, repeatMs, 0};
 	}
 }
+
+SensorReadStatus SensorDataCollector::process(){
+	SensorData sensorData;
+	lastSensorReadStatus = {-1, NO_DATA_CHANGED, '\0'};
+
+	if(radioSensor.getRadio()){
+		lastSensorReadStatus = radioSensor.read(sensorData);
+		if (lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
+			sensorDataArr[sensorData.nodeId] = sensorData; 
+			return lastSensorReadStatus;
+		}
+	}
+
+	if(scheduledSensorCnt != 0){
+		uint32_t currentMillis = millis();
+		if (currentMillis - scheduledSensorArr[nextReadSensorIdx].lastRead  >= scheduledSensorArr[nextReadSensorIdx].repeatMs){
+			// read sensor	
+			lastSensorReadStatus = scheduledSensorArr[nextReadSensorIdx].sensor.read(sensorData);
+			// update lastRead millis
+			scheduledSensorArr[nextReadSensorIdx].lastRead = currentMillis;
+			// set nextReadSensorIdx
+			setNextScheduledSensor();
+			// save data to sensorDataArr
+			if (lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
+				sensorDataArr[sensorData.nodeId] = sensorData;
+			}
+			return lastSensorReadStatus;
+		}   
+	}
+	// no radio message and no scheduked sensor read 
+	return lastSensorReadStatus;
+}
+
+void SensorDataCollector::setNextScheduledSensor(){
+	const uint32_t safetyTime = 100000; // biztonsági okból, hogy a kivonás eredménye biztosan ne legyen negatív, ha az utolsó olvasás régebben volt mint a repeatMS értéke
+	uint32_t currentMillis = millis();
+
+	uint8_t _sensorIdx = 0;
+	uint32_t _minMillis = (scheduledSensorArr[0].repeatMs + safetyTime) - (currentMillis - scheduledSensorArr[0].lastRead);
+	uint32_t _wrk;
+
+	for (int i=1; i < scheduledSensorCnt; i++){
+		_wrk = (scheduledSensorArr[i].repeatMs + safetyTime) - (currentMillis - scheduledSensorArr[i].lastRead); 	
+		if (_wrk < _minMillis){
+			_minMillis = _wrk;
+			_sensorIdx = i;
+		}
+	}
+
+	this->nextReadSensorIdx = _sensorIdx; 
+	return;
+}
+
+
+
