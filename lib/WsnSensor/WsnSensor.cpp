@@ -5,8 +5,13 @@
  * ********************************/
 Sensor::Sensor(){
 }
+
 SensorReadStatus Sensor::getStatus(){
 	return this->lastReadStatus;
+}
+
+SensorType Sensor::getSensorType(){
+	return this->sensorType;
 }
 
 /**********************************
@@ -54,19 +59,12 @@ SensorReadStatus BMESensorAdapter::read(SensorData &sensorDataOut){
 /**********************************
  * RadioSensorAdapter
  * ********************************/
-RadioSensorAdapter::RadioSensorAdapter(){
-}
-
-RadioSensorAdapter::RadioSensorAdapter(RF24 *radio){
+RadioSensorListener::RadioSensorListener(RF24 *radio){
 	this->sensorType = RADIO_SENSOR;
 	this->radio = radio;
 }
 
-RF24* RadioSensorAdapter::getRadio(){
-	return radio;
-}
-
-SensorReadStatus RadioSensorAdapter::read(SensorData &sensorDataOut){
+SensorReadStatus RadioSensorListener::read(SensorData &sensorDataOut){
 	uint8_t rfPipeNum;
 	if (radio->available(&rfPipeNum)) {
 		WsnSensorNodeMessage sensorNodeMessage;
@@ -112,7 +110,7 @@ SensorReadStatus RadioSensorAdapter::read(SensorData &sensorDataOut){
 	return lastReadStatus;
 }
 
-void RadioSensorAdapter::sensorMessage2sensorData(WsnSensorNodeMessage &in, SensorData &out){
+void RadioSensorListener::sensorMessage2sensorData(WsnSensorNodeMessage &in, SensorData &out){
 	out.nodeId = 		in.nodeID;
 	out.sensorSet = 	in.sensorSet;
 	out.temperature = in.temperature;
@@ -211,74 +209,102 @@ void ThingSpeakSensor::getJsonFieldValue(char* jsonString, int8_t fieldNo, char*
 	}
 }
 
+/**********************************
+ * SensorScheduler
+ * ********************************/
+SensorScheduler::SensorScheduler(){
+}
 
+bool SensorScheduler::addTask(Sensor sensor, uint32_t repeatMs){
+	if (taskCnt < MAX_SCHEDULED_SENSORS - 1){
+		taskArr[++taskCnt] = {sensor, repeatMs, 0};
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+	
+SensorReadStatus SensorScheduler::execute(SensorData &sensorDataOut){
+	SensorReadStatus status = {-1, NO_DATA_CHANGED, '\0'};
+	if(taskCnt != 0){
+		uint32_t currentMillis = millis();
+		if (currentMillis - taskArr[execIdx].lastRead  >= taskArr[execIdx].repeatMs){
+			// read sensor	
+			status = taskArr[execIdx].sensor.read(sensorDataOut);
+			// update lastRead millis
+			taskArr[execIdx].lastRead = currentMillis;
+			// calculate nexe natsIdx to run
+			recalcExecIdx();
+		}   
+	}
+	return status;
+}
+
+void SensorScheduler::recalcExecIdx(){
+	const uint32_t safetyTime = 100000; // biztonsági okból, hogy a kivonás eredménye biztosan ne legyen negatív, ha az utolsó olvasás régebben volt mint a repeatMS értéke
+	uint32_t currentMillis = millis();
+
+	uint8_t _taskIdx = 0;
+	uint32_t _minMillis = (taskArr[0].repeatMs + safetyTime) - (currentMillis - taskArr[0].lastRead);
+	uint32_t _wrk;
+
+	for (int i=1; i < taskCnt; i++){
+		_wrk = (taskArr[i].repeatMs + safetyTime) - (currentMillis - taskArr[i].lastRead); 	
+		if (_wrk < _minMillis){
+			_minMillis = _wrk;
+			_taskIdx = i;
+		}
+	}
+
+	this->execIdx = _taskIdx; 
+	return;
+}
+
+uint8_t SensorScheduler::getTaskCnt(){
+	return taskCnt;
+}
 /**********************************
  * SensorDataCollector
  * ********************************/
 SensorDataCollector::SensorDataCollector(){
 }
 
-void SensorDataCollector::setRadioSensor(RadioSensorAdapter radioSensor){
+void SensorDataCollector::setRadioSensor(RadioSensorListener radioSensor){
 	this->radioSensor = radioSensor;
 }
 
-void SensorDataCollector::addSensor(Sensor sensor, uint32_t repeatMs){
-	if (scheduledSensorCnt < MAX_SCHEDULED_SENSORS - 1){
-		scheduledSensorArr[++scheduledSensorCnt] = {sensor, repeatMs, 0};
-	}
+bool SensorDataCollector::addSensor(Sensor sensor, uint32_t repeatMs){
+	return this->sensorScheduler.addTask(sensor, repeatMs);
 }
 
 SensorReadStatus SensorDataCollector::process(){
 	SensorData sensorData;
 	lastSensorReadStatus = {-1, NO_DATA_CHANGED, '\0'};
 
-	if(radioSensor.getRadio()){
-		lastSensorReadStatus = radioSensor.read(sensorData);
-		if (lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
-			sensorDataArr[sensorData.nodeId] = sensorData; 
-			return lastSensorReadStatus;
+	if(radioSensor.getSensorType() != UNDEFINED_SENSOR){
+		this->lastSensorReadStatus = radioSensor.read(sensorData);
+		if (this->lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
+			sensorDataArr[sensorData.nodeId] = sensorData;
+			return this->lastSensorReadStatus; 
 		}
 	}
 
-	if(scheduledSensorCnt != 0){
-		uint32_t currentMillis = millis();
-		if (currentMillis - scheduledSensorArr[nextReadSensorIdx].lastRead  >= scheduledSensorArr[nextReadSensorIdx].repeatMs){
-			// read sensor	
-			lastSensorReadStatus = scheduledSensorArr[nextReadSensorIdx].sensor.read(sensorData);
-			// update lastRead millis
-			scheduledSensorArr[nextReadSensorIdx].lastRead = currentMillis;
-			// set nextReadSensorIdx
-			setNextScheduledSensor();
-			// save data to sensorDataArr
-			if (lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
-				sensorDataArr[sensorData.nodeId] = sensorData;
-			}
-			return lastSensorReadStatus;
-		}   
-	}
-	// no radio message and no scheduked sensor read 
-	return lastSensorReadStatus;
-}
-
-void SensorDataCollector::setNextScheduledSensor(){
-	const uint32_t safetyTime = 100000; // biztonsági okból, hogy a kivonás eredménye biztosan ne legyen negatív, ha az utolsó olvasás régebben volt mint a repeatMS értéke
-	uint32_t currentMillis = millis();
-
-	uint8_t _sensorIdx = 0;
-	uint32_t _minMillis = (scheduledSensorArr[0].repeatMs + safetyTime) - (currentMillis - scheduledSensorArr[0].lastRead);
-	uint32_t _wrk;
-
-	for (int i=1; i < scheduledSensorCnt; i++){
-		_wrk = (scheduledSensorArr[i].repeatMs + safetyTime) - (currentMillis - scheduledSensorArr[i].lastRead); 	
-		if (_wrk < _minMillis){
-			_minMillis = _wrk;
-			_sensorIdx = i;
+	if(sensorScheduler.getTaskCnt() != 0){
+		this->lastSensorReadStatus = sensorScheduler.execute(sensorData);
+		if (this->lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
+			sensorDataArr[sensorData.nodeId] = sensorData;
 		}
 	}
-
-	this->nextReadSensorIdx = _sensorIdx; 
-	return;
+	return this->lastSensorReadStatus;
 }
 
+SensorReadStatus SensorDataCollector::getStatus(){
+	return this->lastSensorReadStatus;
+}
+
+SensorData SensorDataCollector::getSensorData(uint8_t nodeId){
+	return this->sensorDataArr[nodeId];
+}
 
 

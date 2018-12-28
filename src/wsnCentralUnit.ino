@@ -28,7 +28,7 @@ SensorDataCollector dataCollector;
 void setup(){
 	readConfig(cfg);
 
-	dataCollector.setRadioSensor(RadioSensorAdapter(&radio));
+	dataCollector.setRadioSensor(RadioSensorListener(&radio));
 	dataCollector.addSensor(BMESensorAdapter(&bme, 200, 0), 60000);
 
 	WsnTSnodeConfig *c =  &cfg.tsNodeConfigArr[0];
