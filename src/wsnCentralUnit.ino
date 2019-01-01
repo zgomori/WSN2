@@ -1,5 +1,9 @@
 #include "ESP8266WiFi.h"
+#include <WiFiUdp.h>
+
 #include "WsnSensor.h"
+#include "Logger.h"
+
 
 
 #define RADIO_CE_PIN   D3
@@ -16,23 +20,92 @@
 
 #define BME_CS D1
 
+WsnReceiverConfig cfg;
+
+WiFiClient client;
+WiFiUDP udp;
+Logger Log;
+/*
 Adafruit_BME280     bme(BME_CS); // hardware SPI
 RF24                radio(RADIO_CE_PIN, RADIO_CSN_PIN);
 
-WiFiClient client;
-
-WsnReceiverConfig cfg;
 SensorDataCollector dataCollector;
-
+*/ 
 
 void setup(){
-	readConfig(cfg);
+    Serial.begin(115200);
+	Serial.println("START");	
+	 
+	 readConfig(cfg);
+	checkWifiConnection(cfg);
 
+//	 Log.init(LOG_LEVEL_DEBUG, &Serial);
+	 Log.init(LOG_LEVEL_DEBUG, &udp, "10.100.1.25", 5678);
+int ret;
+
+udp.begin(5678);
+ret = udp.beginPacket("10.100.1.25", 5678);
+Serial.print("udp begin ");
+Serial.println(ret);
+udp.write("ESP MESSAGE\n");
+ret = udp.endPacket();	 
+Serial.print("udp endpacket ");
+Serial.println(ret);
+
+	
+/*
 	dataCollector.setRadioSensor(RadioSensorListener(&radio));
 	dataCollector.addSensor(BMESensorAdapter(&bme, 200, 0), 60000);
 
 	WsnTSnodeConfig *c =  &cfg.tsNodeConfigArr[0];
 	dataCollector.addSensor(ThingSpeakSensor(&client, cfg.thingSpeakAddress, c->nodeID, c->thingSpeakReadKey, c->thingSpeakChannel, c->fieldMapping), c->readFrequencyMs);
+*/
+Serial.println("START LOG");
+
+int          intValue1  , intValue2;
+long         longValue1, longValue2;
+bool         boolValue1, boolValue2;
+const char * charArray                 = "this is a string";
+const char   flashCharArray1[] PROGMEM = "this is a string";
+String       stringValue1              = "this is a string";
+float        floatValue;
+double       doubleValue;
+
+
+    intValue1  = random(100);
+    intValue2  = random(10000);
+    longValue1 = random(1000000);
+    longValue2 = random(100000000);
+    boolValue1 = random(2)==0;
+    boolValue2 = random(2)==1;
+    floatValue = 12.34;
+    doubleValue= 1234.56789;
+
+	uint32_t m = micros();
+
+	     Log.debug   (  "Log as Info with integer values : %d, %d"                   , intValue1,  intValue2);
+
+
+//    Log.debug   (F("Log as Info with hex values     : %x, %X"                  ), intValue1,  intValue1);
+    Log.debug   (  "Log as Info with hex values     : %x, %X"                   , intValue2,  intValue2);
+//    Log.debug   (F("Log as Info with binary values  : %b, %B"                  ), intValue1,  intValue1);
+    Log.debug   (  "Log as Info with binary values  : %b, %B"                   , intValue2,  intValue2);
+//    Log.debug   (F("Log as Info with long values    : %l, %l"                  ), longValue1, longValue2);
+    Log.debug   (  "Log as Info with bool values    : %t, %T"                   , boolValue1, boolValue2);
+//    Log.debug   (F("Log as Info with string value   : %s"                      ), charArray);
+    Log.debug   (  "Log as Info with Flash string value   : %S"                 , flashCharArray1);
+    Log.debug   (  "Log as Info with string value   : %s"                       , stringValue1.c_str());
+//    Log.debug   (F("Log as Info with float value   : %F"                       ), floatValue);
+    Log.debug   (  "Log as Info with float value   : %F"                        , floatValue);
+//    Log.debug   (F("Log as Info with double value   : %D"                      ), doubleValue);
+    Log.debug   (  "Log as Info with double value   : %D"                       , doubleValue);
+//    Log.debug   (F("Log as Debug with mixed values  : %d, %d, %l, %l, %t, %T"  ), intValue1 , intValue2,longValue1, longValue2, boolValue1, boolValue2);
+    Log.debug    (  "Log as Trace with bool value    : %T"                       , boolValue1);
+    Log.warning  (  "Log as Warning with bool value  : %T"                       , boolValue1);
+    Log.error    (  "Log as Error with bool value    : %T"                       , boolValue1);
+    Log.fatal    (  "Log as Fatal with bool value    : %T"                       , boolValue1);
+    
+Serial.println(micros()-m);
 }
 
 void loop(){
@@ -42,8 +115,10 @@ void loop(){
 void readConfig(WsnReceiverConfig &_cfg){  
   _cfg.radioNetworkAddress = 0xA0A0A0FFLL;
   _cfg.radioChannel = 101;
-  strcpy(_cfg.wifiSsid, "wxIoT");
-  strcpy(_cfg.wifiPass,"tXgbYPy6DzYaO-U4");
+//  strcpy(_cfg.wifiSsid, "wxIoT");
+//  strcpy(_cfg.wifiPass,"tXgbYPy6DzYaO-U4");
+  strcpy(_cfg.wifiSsid, "wx");
+  strcpy(_cfg.wifiPass,"BuMeu8238UPC");
 
 	strcpy(_cfg.ntpServerName, "time.google.com");
 	_cfg.timeZone = 1;
@@ -74,4 +149,35 @@ void readConfig(WsnReceiverConfig &_cfg){
   _cfg.tsNodeConfigArr[1].nodeID = 7;
   _cfg.tsNodeConfigArr[1].readFrequencyMs = 60000L;
 
+}
+
+
+bool checkWifiConnection(WsnReceiverConfig &_cfg){
+	if (WiFi.status() == WL_CONNECTED){
+		return true;
+	}
+
+	WiFi.mode(WIFI_STA); 
+	WiFi.begin(_cfg.wifiSsid, _cfg.wifiPass);
+
+	uint32_t startMillis = millis();
+	while (millis() - startMillis < 5000){
+		Serial.print("Connecting to SSID...");
+		Serial.print(_cfg.wifiSsid);
+		Serial.print(" Status: ");
+		Serial.println(WiFi.status());
+		if (WiFi.status() == WL_CONNECTED){
+			break;	
+		} 
+		delay(1000);
+	}
+
+	if (WiFi.status() == WL_CONNECTED){
+		Serial.println("WiFi Connected to SSID.");
+		return true;
+	}	
+	else{
+		Serial.println("WiFi Connection failed.");
+		return false;
+	}
 }
