@@ -39,8 +39,9 @@ void setup(){
 	 readConfig(cfg);
 	checkWifiConnection(cfg);
 
-//	 Log.init(LOG_LEVEL_DEBUG, &Serial);
-	 Log.init(LOG_LEVEL_DEBUG, &udp, "10.100.1.25", 5678);
+//	 Log.init(LOG_LEVEL::DEBUG, &Serial);
+	 Log.init(LOG_LEVEL::DEBUG, &udp, "10.100.1.25", 5678);
+/*
 int ret;
 
 udp.begin(5678);
@@ -51,7 +52,7 @@ udp.write("ESP MESSAGE\n");
 ret = udp.endPacket();	 
 Serial.print("udp endpacket ");
 Serial.println(ret);
-
+*/
 	
 /*
 	dataCollector.setRadioSensor(RadioSensorListener(&radio));
@@ -61,6 +62,7 @@ Serial.println(ret);
 	dataCollector.addSensor(ThingSpeakSensor(&client, cfg.thingSpeakAddress, c->nodeID, c->thingSpeakReadKey, c->thingSpeakChannel, c->fieldMapping), c->readFrequencyMs);
 */
 Serial.println("START LOG");
+delay(500);
 
 int          intValue1  , intValue2;
 long         longValue1, longValue2;
@@ -100,10 +102,15 @@ double       doubleValue;
 //    Log.debug   (F("Log as Info with double value   : %D"                      ), doubleValue);
     Log.debug   (  "Log as Info with double value   : %D"                       , doubleValue);
 //    Log.debug   (F("Log as Debug with mixed values  : %d, %d, %l, %l, %t, %T"  ), intValue1 , intValue2,longValue1, longValue2, boolValue1, boolValue2);
-    Log.debug    (  "Log as Trace with bool value    : %T"                       , boolValue1);
+    Log.info    (  "Log as Trace with bool value    : %T"                       , boolValue1);
     Log.warning  (  "Log as Warning with bool value  : %T"                       , boolValue1);
     Log.error    (  "Log as Error with bool value    : %T"                       , boolValue1);
     Log.fatal    (  "Log as Fatal with bool value    : %T"                       , boolValue1);
+
+    Log.error    (  "ERROR    : %x"                       , 1);
+    Log.error    (  "ERROR    : %x"                       , 2);
+    Log.error    (  "ERROR    : %x"                       , 3);
+
     
 Serial.println(micros()-m);
 }

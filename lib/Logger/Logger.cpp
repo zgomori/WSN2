@@ -3,6 +3,8 @@ Based on  https://github.com/thijse/Arduino-Log
 */
 #include "Logger.h"
 
+const char* LOG_LEVEL_NAMES[] = {"FATAL", "ERROR", "WARN ", "INFO ", "DEBUG"};
+
 Logger::Logger(){
 	_level = -1;
 	_logWriter = new DummyLogWriter();

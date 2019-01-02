@@ -7,6 +7,7 @@
 #include "stdarg.h"
 #include "time.h"
 
+extern const char* LOG_LEVEL_NAMES[];
 
 class LogWriter{
 
@@ -24,11 +25,11 @@ class LogWriter{
 
 	public:
 		template <class T> 
-		void writeLog(char* levelName, T msg, ...){
+		void writeLog(int level, T msg, ...){
 			beginLogEntry();
 			
 			printDateTime();
-			_logOutput->print(levelName);
+			_logOutput->print(LOG_LEVEL_NAMES[level]);
 			_logOutput->print(' ');
 			va_list args;
 			va_start(args, msg);
@@ -37,6 +38,7 @@ class LogWriter{
 			_logOutput->print('\n');
 
 			endLogEntry();
+			yield();
 		}
 
 };
@@ -45,7 +47,7 @@ class DummyLogWriter : public LogWriter{
 	public:
 		DummyLogWriter(){};
 		template <class T> 
-		void writeLog(char* levelName, T msg, ...){
+		void writeLog(int level, T msg, ...){
 		}
 };
 
@@ -64,4 +66,6 @@ class UdpLogWriter : public LogWriter{
 	public:
 		UdpLogWriter(WiFiUDP* logOutput, char* ipAddress, uint remotePort);
 };
+
+
 #endif

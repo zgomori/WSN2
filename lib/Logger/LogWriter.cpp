@@ -1,5 +1,22 @@
 #include "LogWriter.h"
 
+/*!
+
+**** Wildcards
+
+* %s	replace with an string (char*)
+* %c	replace with an character
+* %d	replace with an integer value
+* %l	replace with an long value
+* %x	replace and convert integer value into hex
+* %X	like %x but combine with 0x123AB
+* %b	replace and convert integer value into binary
+* %B	like %x but combine with 0b10100011
+* %t	replace and convert boolean value into "t" or "f"
+* %T	like %t but convert into "true" or "false"
+*/
+
+
 void LogWriter::print(const char *format, va_list args) {
 	for (; *format != 0; ++format) {
 		if (*format == '%') {
@@ -8,6 +25,7 @@ void LogWriter::print(const char *format, va_list args) {
 		} else {
 			_logOutput->print(*format);
 		}
+		yield();
 	}
 }
 
@@ -115,9 +133,10 @@ UdpLogWriter::UdpLogWriter(WiFiUDP* udp, char* ipAddress, uint remotePort){
 
 void UdpLogWriter::beginLogEntry(){
 	static_cast<WiFiUDP*>(_logOutput)->beginPacket(_ipAddress, _remotePort);
+	yield();
 }
 
 void UdpLogWriter::endLogEntry(){
 	static_cast<WiFiUDP*>(_logOutput)->endPacket();
-	delay(2);
+	delay(3);
 }
