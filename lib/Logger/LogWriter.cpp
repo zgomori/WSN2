@@ -138,5 +138,5 @@ void UdpLogWriter::beginLogEntry(){
 
 void UdpLogWriter::endLogEntry(){
 	static_cast<WiFiUDP*>(_logOutput)->endPacket();
-	delay(3);
+	delay(2);
 }
