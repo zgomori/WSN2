@@ -27,6 +27,7 @@ BMESensorAdapter::BMESensorAdapter(Adafruit_BME280 *bme, const float elevation, 
 }
 
 SensorReadStatus BMESensorAdapter::read(SensorData &sensorDataOut){
+	Log.debug("BMESensorAdapter.read() - start reading...");
 	delay(1);
 	bme->takeForcedMeasurement();
 	delay(10);
@@ -42,6 +43,7 @@ SensorReadStatus BMESensorAdapter::read(SensorData &sensorDataOut){
 	if ((temp == 0.0) && (pressure = 0.0) && (humidity = 0.0)){
 		lastReadStatus.statusCode = BME_SENSOR_ERROR;
 		strcpy(lastReadStatus.statusMessage, "BME280 READ ERROR");
+		Log.error("BMESensorAdapter.read() - read error");
 	} 
 	else{
 		sensorDataOut.temperature = temp;
@@ -51,6 +53,7 @@ SensorReadStatus BMESensorAdapter::read(SensorData &sensorDataOut){
 
 		lastReadStatus.statusCode = NEW_DATA_ARRIVED;
 		strcpy(lastReadStatus.statusMessage, "");
+		Log.debug("BMESensorAdapter.read() - result= t:%F, h:F%, p:%F",temp, pressure, humidity);
 	}
 
 	return lastReadStatus;
@@ -67,6 +70,8 @@ RadioSensorListener::RadioSensorListener(RF24 *radio){
 SensorReadStatus RadioSensorListener::read(SensorData &sensorDataOut){
 	uint8_t rfPipeNum;
 	if (radio->available(&rfPipeNum)) {
+		Log.debug("RadioSensorListener.read() - start reading.  Pipe number: %d", rfPipeNum);
+
 		WsnSensorNodeMessage sensorNodeMessage;
 	 	radio->read(&sensorNodeMessage, sizeof(WsnSensorNodeMessage));
 
@@ -79,25 +84,18 @@ SensorReadStatus RadioSensorListener::read(SensorData &sensorDataOut){
 
 //			sysStatus.set(sysStatus.RADIO, true);
 
-			Serial.println(F("----------------------------"));
-			Serial.print(F("Message received from node "));
-			Serial.println(sensorNodeMessage.nodeID);
-			Serial.println(F("----------------------------"));
+			Log.debug("RadioSensorListener.read() - Message received from node %d", sensorNodeMessage.nodeID);
+
 		}
 		else{  
 //			sysStatus.set(sysStatus.RADIO, false);
-
 			lastReadStatus.nodeId = -1;
 			lastReadStatus.statusCode = RADIO_CONFIG_ERROR;
 			char errMsg[80];
 			sprintf(errMsg, "Radio config error. PipeNumber:%u nodeId:%u");
 			strcpy(lastReadStatus.statusMessage, errMsg);
 
-			Serial.print(F("[ERROR] RadioSensorAdapter.read : PipeNumber != nodeID "));
-			Serial.print(F("PipeNumber: "));
-			Serial.print(rfPipeNum);
-			Serial.print(F(" nodeID: "));
-			Serial.println(sensorNodeMessage.nodeID);
+			Log.error("RadioSensorListener.read() - config error! PipeNumber: %d, nodeID: %d", rfPipeNum, sensorNodeMessage.nodeID);
 		}
 
 	}
@@ -142,9 +140,12 @@ ThingSpeakSensor::ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAdd
 
 
 SensorReadStatus ThingSpeakSensor::read(SensorData &sensorDataOut){
+	Log.debug("ThingSpeakSensor::read() - key:%s start reading...", readKey);
 	char jsonResponse[255];
 	bool tsGetStatus = thingSpeakUtil.get(readKey, channel, jsonResponse); 
+	Log.debug("ThingSpeakSensor::read() - GET response: %s", jsonResponse);
 	if(tsGetStatus){
+		Log.debug("ThingSpeakSensor::read() - parsing JSON response...", readKey);
 		json2SensorData(jsonResponse, sensorDataOut);
 		sensorDataOut.nodeId = this->nodeId;
 		sensorDataOut.sensorSet = 	this->sensorSet;
@@ -153,11 +154,13 @@ SensorReadStatus ThingSpeakSensor::read(SensorData &sensorDataOut){
 		lastReadStatus.nodeId = this->nodeId;
 		lastReadStatus.statusCode = NEW_DATA_ARRIVED;
 		strcpy(lastReadStatus.statusMessage, "");
+		Log.debug("ThingSpeakSensor::read() - key:%s read OK");
 	}
 	else{
 		lastReadStatus.nodeId = this->nodeId;
 		lastReadStatus.statusCode = THING_SPEAK_READ_ERROR;
 		strcpy(lastReadStatus.statusMessage, "Thing Speak read error");
+		Log.debug("ThingSpeakSensor::read() - read error");
 	}
 
 	return lastReadStatus;
@@ -215,7 +218,7 @@ void ThingSpeakSensor::getJsonFieldValue(char* jsonString, int8_t fieldNo, char*
 SensorScheduler::SensorScheduler(){
 }
 
-bool SensorScheduler::addTask(Sensor sensor, uint32_t repeatMs){
+bool SensorScheduler::addTask(Sensor* sensor, uint32_t repeatMs){
 	if (taskCnt < MAX_SCHEDULED_SENSORS - 1){
 		taskArr[++taskCnt] = {sensor, repeatMs, 0};
 		return true;
@@ -231,7 +234,7 @@ SensorReadStatus SensorScheduler::execute(SensorData &sensorDataOut){
 		uint32_t currentMillis = millis();
 		if (currentMillis - taskArr[execIdx].lastRead  >= taskArr[execIdx].repeatMs){
 			// read sensor	
-			status = taskArr[execIdx].sensor.read(sensorDataOut);
+			status = taskArr[execIdx].sensor->read(sensorDataOut);
 			// update lastRead millis
 			taskArr[execIdx].lastRead = currentMillis;
 			// calculate nexe natsIdx to run
@@ -257,7 +260,8 @@ void SensorScheduler::recalcExecIdx(){
 		}
 	}
 
-	this->execIdx = _taskIdx; 
+	this->execIdx = _taskIdx;
+	Log.debug("SensorScheduler::recalcExecIdx() - Next sensorIdx: %d, sensorType: %s, millis: %d", _taskIdx, taskArr[_taskIdx].sensor->getSensorType(), (_minMillis - safetyTime)); 
 	return;
 }
 
@@ -270,11 +274,11 @@ uint8_t SensorScheduler::getTaskCnt(){
 SensorDataCollector::SensorDataCollector(){
 }
 
-void SensorDataCollector::setRadioSensor(RadioSensorListener radioSensor){
+void SensorDataCollector::setRadioSensor(RadioSensorListener* radioSensor){
 	this->radioSensor = radioSensor;
 }
 
-bool SensorDataCollector::addSensor(Sensor sensor, uint32_t repeatMs){
+bool SensorDataCollector::addSensor(Sensor* sensor, uint32_t repeatMs){
 	return this->sensorScheduler.addTask(sensor, repeatMs);
 }
 
@@ -282,8 +286,8 @@ SensorReadStatus SensorDataCollector::process(){
 	SensorData sensorData;
 	lastSensorReadStatus = {-1, NO_DATA_CHANGED, '\0'};
 
-	if(radioSensor.getSensorType() != UNDEFINED_SENSOR){
-		this->lastSensorReadStatus = radioSensor.read(sensorData);
+	if(radioSensor->getSensorType() != UNDEFINED_SENSOR){
+		this->lastSensorReadStatus = radioSensor->read(sensorData);
 		if (this->lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
 			sensorDataArr[sensorData.nodeId] = sensorData;
 			return this->lastSensorReadStatus; 

@@ -10,6 +10,7 @@
 
 #include "ThingSpeakUtil.h"
 #include "WsnCommon.h"
+#include "Logger.h"
 
 
 enum SensorStatusCode: int8_t{
@@ -117,7 +118,7 @@ class ThingSpeakSensor : public Sensor{
 class SensorScheduler{
 	private:
 	struct ScheduledSensor{
-		Sensor sensor;
+		Sensor* sensor;
 		uint32_t repeatMs;
 		uint32_t lastRead;
 	};
@@ -131,7 +132,7 @@ class SensorScheduler{
 
 	public:
 	SensorScheduler();
-	bool addTask(Sensor sensor, uint32_t repeatMs);
+	bool addTask(Sensor* sensor, uint32_t repeatMs);
 	SensorReadStatus execute(SensorData &sensorDataOut);
 	uint8_t getTaskCnt();
 };
@@ -141,13 +142,13 @@ class SensorScheduler{
  ****************************************/
 class SensorDataCollector{
 	struct ScheduledSensor{
-		Sensor sensor;
+		Sensor* sensor;
 		uint32_t repeatMs;
 		uint32_t lastRead;
 	};
 
 	private:
-	RadioSensorListener radioSensor = RadioSensorListener(NULL);
+	RadioSensorListener* radioSensor;
 	SensorScheduler sensorScheduler;
 
 	SensorData sensorDataArr[10];
@@ -155,14 +156,15 @@ class SensorDataCollector{
 
 	public:
 	SensorDataCollector();
-	void setRadioSensor(RadioSensorListener radioSensor);
-	bool addSensor(Sensor sensor, uint32_t repeatMs);
+	void setRadioSensor(RadioSensorListener* radioSensor);
+	bool addSensor(Sensor* sensor, uint32_t repeatMs);
 	SensorReadStatus process();
 	SensorReadStatus getStatus();
 	SensorData getSensorData(uint8_t nodeId);
 };	
 
 extern time_t now(); 
+extern Logger Log;
 
 #endif // WSN_SENSOR_H
 
