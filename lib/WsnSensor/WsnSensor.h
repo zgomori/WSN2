@@ -137,10 +137,39 @@ class SensorScheduler{
 	uint8_t getTaskCnt();
 };
 
+
+/**********************************
+ * SensorEventNotifier
+ * ********************************/
+
+class SensorObserver{
+  public:
+	 SensorObserver();
+    virtual void update(SensorData* sensorData) = 0;
+};
+
+
+/**********************************
+ * SensorEventNotifier
+ * ********************************/
+
+class SensorEventNotifier{
+	protected:
+		static const uint8_t MAX_OBSERVERS = 5;	
+		SensorObserver* observerArr[MAX_OBSERVERS];
+		int8_t cnt=0;
+
+		void notifyObservers(SensorData* sensorData);
+		
+	public:
+		bool registerObserver(SensorObserver* observer);
+		bool removeObserver(SensorObserver* observer);
+};
+
 /****************************************
  * SensorDataCollector
  ****************************************/
-class SensorDataCollector{
+class SensorDataCollector : public SensorEventNotifier{
 	struct ScheduledSensor{
 		Sensor* sensor;
 		uint32_t repeatMs;
@@ -153,7 +182,7 @@ class SensorDataCollector{
 
 	SensorData sensorDataArr[10];
 	SensorReadStatus lastSensorReadStatus;
-
+	
 	public:
 	SensorDataCollector();
 	void setRadioSensor(RadioSensorListener* radioSensor);

@@ -51,7 +51,8 @@
                 "C:/Users/zoltan.gomori/.platformio/packages/tool-unity",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/include",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/src",
-                ""
+                "",
+                "${workspaceFolder}/lib"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,

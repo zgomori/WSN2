@@ -3,7 +3,7 @@
 
 #include "WsnSensor.h"
 #include "Logger.h"
-
+#include "Screen.h"
 
 
 #define RADIO_CE_PIN   D3
@@ -25,12 +25,12 @@ WsnReceiverConfig cfg;
 WiFiClient client;
 WiFiUDP udp;
 Logger Log;
-/*
+
 Adafruit_BME280     bme(BME_CS); // hardware SPI
 RF24                radio(RADIO_CE_PIN, RADIO_CSN_PIN);
 
 SensorDataCollector dataCollector;
-*/ 
+ 
 
 void setup(){
     Serial.begin(115200);
@@ -41,18 +41,7 @@ void setup(){
 
 //	 Log.init(LOG_LEVEL::DEBUG, &Serial);
 	 Log.init(LOG_LEVEL::DEBUG, &udp, "10.100.1.25", 5678);
-/*
-int ret;
 
-udp.begin(5678);
-ret = udp.beginPacket("10.100.1.25", 5678);
-Serial.print("udp begin ");
-Serial.println(ret);
-udp.write("ESP MESSAGE\n");
-ret = udp.endPacket();	 
-Serial.print("udp endpacket ");
-Serial.println(ret);
-*/
 	
 /*
 	dataCollector.setRadioSensor(RadioSensorListener(&radio));
@@ -61,6 +50,8 @@ Serial.println(ret);
 	WsnTSnodeConfig *c =  &cfg.tsNodeConfigArr[0];
 	dataCollector.addSensor(ThingSpeakSensor(&client, cfg.thingSpeakAddress, c->nodeID, c->thingSpeakReadKey, c->thingSpeakChannel, c->fieldMapping), c->readFrequencyMs);
 */
+
+
 Serial.println("START LOG");
 delay(500);
 

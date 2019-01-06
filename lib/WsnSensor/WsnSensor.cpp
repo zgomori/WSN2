@@ -268,6 +268,43 @@ void SensorScheduler::recalcExecIdx(){
 uint8_t SensorScheduler::getTaskCnt(){
 	return taskCnt;
 }
+
+
+/**********************************
+ * SensorEventNotifier
+ * ********************************/
+bool SensorEventNotifier::registerObserver(SensorObserver* observer){
+	if (cnt < MAX_OBSERVERS - 1){
+		observerArr[++cnt] = observer;
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
+bool SensorEventNotifier::removeObserver(SensorObserver* observer){
+	SensorObserver* wrkArr[MAX_OBSERVERS];
+	memcpy(wrkArr, observerArr, sizeof(SensorObserver*) * MAX_OBSERVERS);
+	memset(observerArr, 0, sizeof(observerArr));
+
+	cnt = 0;
+	for(uint8_t i = 0; i < cnt; i++){
+		if ((wrkArr[i] != NULL) && (wrkArr[i] != observer)){
+			registerObserver(wrkArr[i]);
+		}	
+	}
+}
+
+void SensorEventNotifier::notifyObservers(SensorData* sensorData){
+	for (uint8_t i=0; i < cnt; i++){
+		if (observerArr[i] != NULL){
+			observerArr[i]->update(sensorData);
+		}
+	}
+}
+
+
 /**********************************
  * SensorDataCollector
  * ********************************/
@@ -290,6 +327,7 @@ SensorReadStatus SensorDataCollector::process(){
 		this->lastSensorReadStatus = radioSensor->read(sensorData);
 		if (this->lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
 			sensorDataArr[sensorData.nodeId] = sensorData;
+			notifyObservers(&(sensorDataArr[sensorData.nodeId]));
 			return this->lastSensorReadStatus; 
 		}
 	}
@@ -298,6 +336,7 @@ SensorReadStatus SensorDataCollector::process(){
 		this->lastSensorReadStatus = sensorScheduler.execute(sensorData);
 		if (this->lastSensorReadStatus.statusCode == NEW_DATA_ARRIVED){
 			sensorDataArr[sensorData.nodeId] = sensorData;
+			notifyObservers(&(sensorDataArr[sensorData.nodeId]));
 		}
 	}
 	return this->lastSensorReadStatus;
