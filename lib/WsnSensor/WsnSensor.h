@@ -55,7 +55,7 @@ class Sensor{
 	
 	public:
 	Sensor();
-	virtual SensorReadStatus read(SensorData &sensorDataOut){};
+	virtual SensorReadStatus read(SensorData &sensorDataOut);
 	SensorReadStatus getStatus();
 	SensorType getSensorType();
 };
@@ -139,9 +139,8 @@ class SensorScheduler{
 
 
 /**********************************
- * SensorEventNotifier
+ * SensorObserver 
  * ********************************/
-
 class SensorObserver{
   public:
 	 SensorObserver();
@@ -163,7 +162,7 @@ class SensorEventNotifier{
 		
 	public:
 		bool registerObserver(SensorObserver* observer);
-		bool removeObserver(SensorObserver* observer);
+		void removeObserver(SensorObserver* observer);
 };
 
 /****************************************

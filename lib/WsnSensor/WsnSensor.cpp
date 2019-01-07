@@ -92,7 +92,7 @@ SensorReadStatus RadioSensorListener::read(SensorData &sensorDataOut){
 			lastReadStatus.nodeId = -1;
 			lastReadStatus.statusCode = RADIO_CONFIG_ERROR;
 			char errMsg[80];
-			sprintf(errMsg, "Radio config error. PipeNumber:%u nodeId:%u");
+			sprintf(errMsg, "Radio config error. PipeNumber:%u nodeId:%u", rfPipeNum, sensorNodeMessage.nodeID);
 			strcpy(lastReadStatus.statusMessage, errMsg);
 
 			Log.error("RadioSensorListener.read() - config error! PipeNumber: %d, nodeID: %d", rfPipeNum, sensorNodeMessage.nodeID);
@@ -219,8 +219,11 @@ SensorScheduler::SensorScheduler(){
 }
 
 bool SensorScheduler::addTask(Sensor* sensor, uint32_t repeatMs){
+	uint32_t w;
 	if (taskCnt < MAX_SCHEDULED_SENSORS - 1){
-		taskArr[++taskCnt] = {sensor, repeatMs, 0};
+		taskCnt++;
+		w = (0 - repeatMs) + (repeatMs * ((taskCnt + 1) * 10000));
+		taskArr[taskCnt] = {sensor, repeatMs, w};
 		return true;
 	}
 	else{
@@ -283,7 +286,7 @@ bool SensorEventNotifier::registerObserver(SensorObserver* observer){
 	}
 }
 
-bool SensorEventNotifier::removeObserver(SensorObserver* observer){
+void SensorEventNotifier::removeObserver(SensorObserver* observer){
 	SensorObserver* wrkArr[MAX_OBSERVERS];
 	memcpy(wrkArr, observerArr, sizeof(SensorObserver*) * MAX_OBSERVERS);
 	memset(observerArr, 0, sizeof(observerArr));

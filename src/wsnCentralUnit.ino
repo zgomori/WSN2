@@ -54,7 +54,7 @@ void setup(){
 
 Serial.println("START LOG");
 delay(500);
-
+/*
 int          intValue1  , intValue2;
 long         longValue1, longValue2;
 bool         boolValue1, boolValue2;
@@ -104,6 +104,7 @@ double       doubleValue;
 
     
 Serial.println(micros()-m);
+*/
 }
 
 void loop(){

@@ -3,7 +3,7 @@
 
 #include "TFT_eSPI.h"
 #include "WsnSensor.h"
-#include <Fonts/Custom/orbitron_light_11_2.h>
+#include "Custom/orbitron_light_11_2.h"
 
 class Screen{
 	protected:
@@ -35,9 +35,9 @@ class MainScreen: public Screen, public SensorObserver{
 		void displaySensor6();
 
 	public:
-		void activate();
-		void deactivate();
-		void init();
+		void activate() override;
+		void deactivate() override ;
+		void init() override ;
 		void update(SensorData* sensorData);
 }; 
 
