@@ -278,7 +278,7 @@ uint8_t SensorScheduler::getTaskCnt(){
  * ********************************/
 bool SensorEventNotifier::registerObserver(SensorObserver* observer){
 	if (cnt < MAX_OBSERVERS - 1){
-		observerArr[++cnt] = observer;
+		observerArr[cnt++] = observer;
 		return true;
 	}
 	else{
@@ -287,16 +287,13 @@ bool SensorEventNotifier::registerObserver(SensorObserver* observer){
 }
 
 void SensorEventNotifier::removeObserver(SensorObserver* observer){
-	SensorObserver* wrkArr[MAX_OBSERVERS];
-	memcpy(wrkArr, observerArr, sizeof(SensorObserver*) * MAX_OBSERVERS);
-	memset(observerArr, 0, sizeof(observerArr));
-
-	cnt = 0;
-	for(uint8_t i = 0; i < cnt; i++){
-		if ((wrkArr[i] != NULL) && (wrkArr[i] != observer)){
-			registerObserver(wrkArr[i]);
-		}	
-	}
+    uint8_t newIndex = 0;
+    for (uint8_t i = 0; i < this->cnt; i++){
+        if (this->observerArr[i] != observer) {
+            this->observerArr[newIndex++] = this->observerArr[i];
+        }
+    }
+	 this->cnt = newIndex;
 }
 
 void SensorEventNotifier::notifyObservers(SensorData* sensorData){

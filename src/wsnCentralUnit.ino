@@ -4,6 +4,7 @@
 #include "WsnSensor.h"
 #include "Logger.h"
 #include "Screen.h"
+#include "TimeEventNotifier.h"
 
 
 #define RADIO_CE_PIN   D3
