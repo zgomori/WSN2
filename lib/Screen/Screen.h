@@ -3,6 +3,7 @@
 
 #include "TFT_eSPI.h"
 #include "WsnSensor.h"
+#include "TimeEventNotifier.h"
 #include "Custom/orbitron_light_11_2.h"
 
 class Screen{
@@ -28,17 +29,24 @@ class Screen{
 #define COLOR_ICON_NORMAL	0x7BEF
 #define COLOR_ICON_ERROR	0xF800
 
-class MainScreen: public Screen, public SensorObserver{
+class MainScreen: public Screen, public SensorObserver, public TimeObserver{
 	private:
+//		const char *dayShortNames = " Err Sun Mon Tue Wed Thu Fri Sat";
+		const char *dayShortNames = " Err Vas HetKedd SzeCsut Pen Szo"; 
+
 		void displaySensor0();
 		void displaySensor1();
 		void displaySensor6();
-
+		void displayClock(time_t currentTime);
+		void displayDate(time_t currentTime);
+		
 	public:
-		void activate() override;
-		void deactivate() override ;
-		void init() override ;
-		void update(SensorData* sensorData);
+		void activate() override;  //Screen interface
+		void deactivate() override; //Screen interface
+		void init() override ; //Screen interface
+		void onSensorChange(SensorData* sensorData) override; // SensorObserver interface
+		void onMinuteChange(time_t currentTime) override; // TimeObserver interface
+		void onDayChange(time_t currentTime) override; // TimeObserver interface
 }; 
 
 
@@ -68,5 +76,7 @@ class DataField{
 };
 
 extern SensorDataCollector dataCollector;
+extern TimeEventHandler timeEventHandler;
+
 
 #endif 

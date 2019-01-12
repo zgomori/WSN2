@@ -3,18 +3,22 @@
 
 #include "time.h"
 
-enum timeElement: uint8_t{
-	TIME_ELEMENT_MINUTE = 0,
-	TIME_ELEMENT_HOUR = 1,
-	TIME_ELEMENT_DAY = 2
-};
+namespace TimeEventType{
+	enum timeElement: uint8_t{
+		MINUTE = 0,
+		HOUR = 1,
+		DAY = 2
+	};
+}
 
 /**********************************
  * TimeObserver 
  * ********************************/
 class TimeObserver{
 	public:
-		virtual void update(timeElement type, time_t currentTime){};
+		virtual void onMinuteChange(time_t currentTime){};
+		virtual void onHourChange(time_t currentTime){};
+		virtual void onDayChange(time_t currentTime){};
 };
 
 /**********************************
@@ -26,14 +30,14 @@ class TimeEventNotifier{
 		static const uint8_t MAX_OBSERVERS = 5;	
 		TimeObserver* observerArr[MAX_OBSERVERS];
 		int8_t cnt=0;
-		timeElement type;
+		TimeEventType::timeElement type;
 
 	public:
-		TimeEventNotifier(timeElement type);
+		TimeEventNotifier(TimeEventType::timeElement type);
 		bool registerObserver(TimeObserver* observer);
 		void removeObserver(TimeObserver* observer);
 		void notifyObservers(time_t currentTime);
-		timeElement getType();
+		TimeEventType::timeElement getType();
 };
 
 class TimeEventHandler{

@@ -9,10 +9,14 @@ TFT_eSPI* Screen::getTft(){
 
 void MainScreen::activate(){
 	dataCollector.registerObserver(this);
+	timeEventHandler.registerMinObserver(this);
+	timeEventHandler.registerDayObserver(this);
 }
 
 void MainScreen::deactivate(){
 	dataCollector.removeObserver(this);
+	timeEventHandler.removeMinObserver(this);
+	timeEventHandler.removeDayObserver(this);
 }
 
 void MainScreen::init(){
@@ -88,7 +92,7 @@ void MainScreen::displaySensor6(){
 }
 
 
-void MainScreen::update(SensorData* sensorData){
+void MainScreen::onSensorChange(SensorData* sensorData){
 	switch (sensorData->nodeId){
 		case 0 :
 			displaySensor0();
@@ -100,6 +104,31 @@ void MainScreen::update(SensorData* sensorData){
 			displaySensor6();
 			break;
 	}
+}
+
+void MainScreen::onMinuteChange(time_t currentTime){
+	char tftClock[6];
+	sprintf(tftClock, "%u:%02u", hour(currentTime), minute(currentTime));
+ 	tft->setTextColor(TFT_GREEN,TFT_BLACK);
+	tft->setTextDatum(MC_DATUM);
+	tft->setTextPadding(140);  
+	tft->drawString(tftClock, 120, 60, 7);
+}
+
+void MainScreen::onDayChange(time_t currentTime){
+	char tftDate[6];
+	char tftDOW[5];
+	sprintf(tftDate, "%02u.%02u", month(currentTime), day(currentTime));
+	strncpy(tftDOW, dayShortNames + (weekday() * 4), 4);
+	tftDOW[4] = 0;
+
+	tft->setTextColor(TFT_DARKGREY,TFT_BLACK);
+	tft->setTextPadding(60); 
+	tft->setFreeFont(CF_ORB11);
+	tft->setTextDatum(ML_DATUM);
+	tft->drawString(tftDate, 4, 100, 1);
+	tft->setTextDatum(MR_DATUM);
+	tft->drawString(tftDOW, 237, 100, 1);
 }
 
 

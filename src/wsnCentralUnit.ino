@@ -31,6 +31,7 @@ Adafruit_BME280     bme(BME_CS); // hardware SPI
 RF24                radio(RADIO_CE_PIN, RADIO_CSN_PIN);
 
 SensorDataCollector dataCollector;
+TimeEventHandler timeEventHandler;
  
 
 void setup(){
@@ -51,6 +52,8 @@ void setup(){
 	WsnTSnodeConfig *c =  &cfg.tsNodeConfigArr[0];
 	dataCollector.addSensor(ThingSpeakSensor(&client, cfg.thingSpeakAddress, c->nodeID, c->thingSpeakReadKey, c->thingSpeakChannel, c->fieldMapping), c->readFrequencyMs);
 */
+
+timeEventHandler.process();
 
 
 Serial.println("START LOG");

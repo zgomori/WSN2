@@ -144,7 +144,7 @@ class SensorScheduler{
 class SensorObserver{
   public:
 	 SensorObserver();
-    virtual void update(SensorData* sensorData) = 0;
+    virtual void onSensorChange(SensorData* sensorData) = 0;
 };
 
 

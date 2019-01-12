@@ -1,6 +1,7 @@
 #include "TimeEventNotifier.h"
 
-TimeEventNotifier::TimeEventNotifier(timeElement type){
+
+TimeEventNotifier::TimeEventNotifier(TimeEventType::timeElement type){
 	this->type = type;
 }
 
@@ -27,19 +28,29 @@ void TimeEventNotifier::removeObserver(TimeObserver* observer){
 void TimeEventNotifier::notifyObservers(time_t currentTime){
 	for (uint8_t i=0; i < cnt; i++){
 		if (observerArr[i] != NULL){
-			observerArr[i]->update(this->type, currentTime);
+			switch (this->type){
+				case TimeEventType::MINUTE :
+					observerArr[i]->onMinuteChange(currentTime);
+					break;
+				case TimeEventType::HOUR :
+					observerArr[i]->onHourChange(currentTime);
+					break;
+				case TimeEventType::DAY :
+					observerArr[i]->onDayChange(currentTime);
+					break;
+			}	
 		}
 	}
 }
 
-timeElement TimeEventNotifier::getType(){
+TimeEventType::timeElement TimeEventNotifier::getType(){
 	return this->type;
 }
 
 TimeEventHandler::TimeEventHandler(){
-	 *minNotifier = TimeEventNotifier(TIME_ELEMENT_MINUTE);
-	 *hourNotifier = TimeEventNotifier(TIME_ELEMENT_HOUR);
-	 *dayNotifier = TimeEventNotifier(TIME_ELEMENT_DAY);
+	 *minNotifier = TimeEventNotifier(TimeEventType::MINUTE);
+	 *hourNotifier = TimeEventNotifier(TimeEventType::HOUR);
+	 *dayNotifier = TimeEventNotifier(TimeEventType::DAY);
 
 }
 

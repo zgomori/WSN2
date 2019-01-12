@@ -299,7 +299,7 @@ void SensorEventNotifier::removeObserver(SensorObserver* observer){
 void SensorEventNotifier::notifyObservers(SensorData* sensorData){
 	for (uint8_t i=0; i < cnt; i++){
 		if (observerArr[i] != NULL){
-			observerArr[i]->update(sensorData);
+			observerArr[i]->onSensorChange(sensorData);
 		}
 	}
 }
