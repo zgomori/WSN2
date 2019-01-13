@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "Screen.h"
 #include "TimeEventNotifier.h"
+#include <TFT_eSPI.h>
 
 
 #define RADIO_CE_PIN   D3
@@ -30,9 +31,15 @@ Logger Log;
 Adafruit_BME280     bme(BME_CS); // hardware SPI
 RF24                radio(RADIO_CE_PIN, RADIO_CSN_PIN);
 
+
 SensorDataCollector dataCollector;
+
 TimeEventHandler timeEventHandler;
- 
+
+
+
+TFT_eSPI tft = TFT_eSPI();
+MainScreen*  mainScreen = new MainScreen(&tft);
 
 void setup(){
     Serial.begin(115200);
@@ -53,7 +60,17 @@ void setup(){
 	dataCollector.addSensor(ThingSpeakSensor(&client, cfg.thingSpeakAddress, c->nodeID, c->thingSpeakReadKey, c->thingSpeakChannel, c->fieldMapping), c->readFrequencyMs);
 */
 
-timeEventHandler.process();
+//timeEventHandler.process();
+
+
+mainScreen->test();
+
+TouchHelperInterface* thi;
+
+thi = &(mainScreen->valamiTouchHelper);
+
+thi->execute();
+
 
 
 Serial.println("START LOG");

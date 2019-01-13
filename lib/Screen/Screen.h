@@ -6,12 +6,39 @@
 #include "TimeEventNotifier.h"
 #include "Custom/orbitron_light_11_2.h"
 
+class TouchHelperInterface{
+	public:
+		virtual void execute(){};
+};
+
+template<typename T> 
+class TouchHelper: public TouchHelperInterface{
+	typedef void (T::*MemberFn)(); 
+
+	public:
+		TouchHelper(){};
+		void setCallbackFunction(T* objInstance, MemberFn memberFn){
+				this->memberFn = memberFn;
+				this->objInstance = objInstance;
+		}
+
+		void execute(){
+			(objInstance->*memberFn)();
+		}
+
+	private:
+		MemberFn memberFn;
+		T* objInstance; 
+
+};
+
+
 class Screen{
 	protected:
 		TFT_eSPI* tft;
 
 	public:
-		Screen(TFT_eSPI* tft);
+//		Screen(TFT_eSPI* tft);
 		TFT_eSPI* getTft();
 		virtual void activate() = 0;
 		virtual void deactivate() = 0;
@@ -34,20 +61,47 @@ class MainScreen: public Screen, public SensorObserver, public TimeObserver{
 //		const char *dayShortNames = " Err Sun Mon Tue Wed Thu Fri Sat";
 		const char *dayShortNames = " Err Vas HetKedd SzeCsut Pen Szo"; 
 
+
+
 		void displaySensor0();
 		void displaySensor1();
 		void displaySensor6();
 		void displayClock(time_t currentTime);
 		void displayDate(time_t currentTime);
+		void onValamiTouch();
 		
+
 	public:
+		TouchHelper<MainScreen> valamiTouchHelper;
+
+
+		MainScreen(TFT_eSPI* tft);
 		void activate() override;  //Screen interface
 		void deactivate() override; //Screen interface
 		void init() override ; //Screen interface
 		void onSensorChange(SensorData* sensorData) override; // SensorObserver interface
 		void onMinuteChange(time_t currentTime) override; // TimeObserver interface
 		void onDayChange(time_t currentTime) override; // TimeObserver interface
+		void test();
 }; 
+
+/*
+class TouchHelper{
+	typedef void (MainScreen::*MemberFn)(); 
+
+
+	public:
+		TouchHelper();
+		void setCallbackFunction(MainScreen* mainScreen, MemberFn memberFn);
+		void execute();
+
+	private:
+		MemberFn memberFn;
+		MainScreen* mainScreen; 
+
+};
+*/
+
 
 
 
@@ -74,6 +128,7 @@ class DataField{
 		void update(int value);
 
 };
+
 
 extern SensorDataCollector dataCollector;
 extern TimeEventHandler timeEventHandler;

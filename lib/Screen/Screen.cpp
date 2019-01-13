@@ -1,16 +1,28 @@
 #include "Screen.h"
-
+/*
 Screen::Screen(TFT_eSPI* tft){
 	this->tft = tft;
 }
+*/
 TFT_eSPI* Screen::getTft(){
 	return this->tft;
+}
+
+void MainScreen::test(){
+	valamiTouchHelper.setCallbackFunction(this, &MainScreen::onValamiTouch);
+}
+
+MainScreen::MainScreen(TFT_eSPI* tft){
+	this->tft = tft;
 }
 
 void MainScreen::activate(){
 	dataCollector.registerObserver(this);
 	timeEventHandler.registerMinObserver(this);
 	timeEventHandler.registerDayObserver(this);
+
+//	TouchHelper<MainScreen> valamiTouchHelper;
+//	valamiTouchHelper.setCallbackFunction(this, &MainScreen::onValamiTouch);
 }
 
 void MainScreen::deactivate(){
@@ -131,12 +143,27 @@ void MainScreen::onDayChange(time_t currentTime){
 	tft->drawString(tftDOW, 237, 100, 1);
 }
 
+void MainScreen::onValamiTouch(){
+	Serial.println("!!!!!!!MainScreen::onValamiTouch");
+}
 
 
 
+/*
+TouchHelper::TouchHelper(){
 
+}
 
+void TouchHelper::setCallbackFunction(MainScreen* mainScreen, MemberFn memberFn){
+	this->memberFn = memberFn;
+	this->mainScreen = mainScreen;
+}
 
+void TouchHelper::execute(){
+	(mainScreen->*memberFn)();
+}
+
+*/
 
 
 
@@ -153,7 +180,7 @@ DataField::DataField(uint16_t x, uint16_t y, uint16_t bgColor, uint16_t fgColor,
 	this->screen = screen;
 }
 void DataField::show(char* v){
-	TFT_eSPI* tft = screen->getTft();
+	TFT_eSPI* tft  = screen->getTft();
 	tft->setTextPadding(padding);
 	tft->setTextDatum(align);  
 	tft->setTextColor(fgColor, bgColor);
@@ -177,3 +204,4 @@ void DataField::update(int value){
 	itoa(value, charBuffer, 10);
 	show(charBuffer);
 }	
+
