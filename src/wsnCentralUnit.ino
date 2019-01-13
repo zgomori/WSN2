@@ -63,8 +63,6 @@ void setup(){
 //timeEventHandler.process();
 
 
-mainScreen->test();
-
 TouchHelperInterface* thi;
 
 thi = &(mainScreen->valamiTouchHelper);

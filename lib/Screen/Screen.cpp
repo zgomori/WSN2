@@ -1,4 +1,6 @@
 #include "Screen.h"
+
+
 /*
 Screen::Screen(TFT_eSPI* tft){
 	this->tft = tft;
@@ -6,10 +8,6 @@ Screen::Screen(TFT_eSPI* tft){
 */
 TFT_eSPI* Screen::getTft(){
 	return this->tft;
-}
-
-void MainScreen::test(){
-	valamiTouchHelper.setCallbackFunction(this, &MainScreen::onValamiTouch);
 }
 
 MainScreen::MainScreen(TFT_eSPI* tft){

@@ -17,9 +17,13 @@ class TouchHelper: public TouchHelperInterface{
 
 	public:
 		TouchHelper(){};
+		TouchHelper(T* objInstance, MemberFn memberFn){
+			this->memberFn = memberFn;
+			this->objInstance = objInstance;
+		};
 		void setCallbackFunction(T* objInstance, MemberFn memberFn){
-				this->memberFn = memberFn;
-				this->objInstance = objInstance;
+			this->memberFn = memberFn;
+			this->objInstance = objInstance;
 		}
 
 		void execute(){
@@ -72,17 +76,15 @@ class MainScreen: public Screen, public SensorObserver, public TimeObserver{
 		
 
 	public:
-		TouchHelper<MainScreen> valamiTouchHelper;
+		TouchHelper<MainScreen> valamiTouchHelper = TouchHelper<MainScreen>(this, &MainScreen::onValamiTouch);
 
-
-		MainScreen(TFT_eSPI* tft);
+		MainScreen(TFT_eSPI* tft); 
 		void activate() override;  //Screen interface
 		void deactivate() override; //Screen interface
 		void init() override ; //Screen interface
 		void onSensorChange(SensorData* sensorData) override; // SensorObserver interface
 		void onMinuteChange(time_t currentTime) override; // TimeObserver interface
 		void onDayChange(time_t currentTime) override; // TimeObserver interface
-		void test();
 }; 
 
 /*
