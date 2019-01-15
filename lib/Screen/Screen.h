@@ -1,113 +1,19 @@
 #ifndef SCREEN_H
 #define  SCREEN_H
 
+
+#include "TouchControl.h"
+
 #include "TFT_eSPI.h"
 #include "WsnSensor.h"
 #include "TimeEventNotifier.h"
 #include "Custom/orbitron_light_11_2.h"
-
-class ScreenArea{
-	public:
-		bool isContain(uint16_t pX, uint16_t pY);
-	protected:
-		uint16_t x;
-		uint16_t y;
-		uint16_t width;
-		uint16_t height;
-};
-
-class TouchObserver: public ScreenArea{
-	public:
-		virtual void execute(){};
-};
-
-template<typename T> 
-class TouchControl: public TouchObserver{
-	typedef void (T::*MemberFn)(); 
-
-	public:
-		TouchControl(){};
-		TouchControl(T* objInstance, MemberFn memberFn){
-			this->memberFn = memberFn;
-			this->objInstance = objInstance;
-		};
-		void setCallbackFunction(T* objInstance, MemberFn memberFn){
-			this->memberFn = memberFn;
-			this->objInstance = objInstance;
-		}
-
-		void execute(){
-			(objInstance->*memberFn)();
-		}
-
-	private:
-		MemberFn memberFn;
-		T* objInstance; 
-};
-
-
-class TouchEventNotifier{
-	protected:
-		static const uint8_t MAX_OBSERVERS = 10;	
-		TouchObserver* observerArr[MAX_OBSERVERS];
-		int8_t cnt=0;
-
-		void notifyObservers(uint16_t touchX, uint16_t touchY);
-		
-	public:
-		bool registerObserver(TouchObserver* observer);
-		void removeObserver(TouchObserver* observer);
-};
-
-class TouchEventHandler: public TouchEventNotifier{
-	private:
-		uint16_t touchCalibrateData[5] =  { 213, 3571, 377, 3516, 4 };
-		TFT_eSPI* tft;
-		uint32_t touchedMillis = millis();
-
-	public:
-		TouchEventHandler(TFT_eSPI* tft);
-		void listenEvent(); 	
-};
-/*
-
-class TouchHelperInterface{
-	public:
-		virtual void execute(){};
-};
-
-template<typename T> 
-class TouchHelper: public TouchHelperInterface{
-	typedef void (T::*MemberFn)(); 
-
-	public:
-		TouchHelper(){};
-		TouchHelper(T* objInstance, MemberFn memberFn){
-			this->memberFn = memberFn;
-			this->objInstance = objInstance;
-		};
-		void setCallbackFunction(T* objInstance, MemberFn memberFn){
-			this->memberFn = memberFn;
-			this->objInstance = objInstance;
-		}
-
-		void execute(){
-			(objInstance->*memberFn)();
-		}
-
-	private:
-		MemberFn memberFn;
-		T* objInstance; 
-
-};
-*/
 
 class Screen{
 	protected:
 		TFT_eSPI* tft;
 
 	public:
-//		Screen(TFT_eSPI* tft);
 		TFT_eSPI* getTft();
 		virtual void activate() = 0;
 		virtual void deactivate() = 0;
@@ -151,27 +57,6 @@ class MainScreen: public Screen, public SensorObserver, public TimeObserver{
 		void onMinuteChange(time_t currentTime) override; // TimeObserver interface
 		void onDayChange(time_t currentTime) override; // TimeObserver interface
 }; 
-
-/*
-class TouchHelper{
-	typedef void (MainScreen::*MemberFn)(); 
-
-
-	public:
-		TouchHelper();
-		void setCallbackFunction(MainScreen* mainScreen, MemberFn memberFn);
-		void execute();
-
-	private:
-		MemberFn memberFn;
-		MainScreen* mainScreen; 
-
-};
-*/
-
-
-
-
 
 class DataField{
 	private:

@@ -4,6 +4,7 @@
 #include "WsnSensor.h"
 #include "Logger.h"
 #include "Screen.h"
+#include "TouchControl.h"
 #include "TimeEventNotifier.h"
 #include <TFT_eSPI.h>
 
