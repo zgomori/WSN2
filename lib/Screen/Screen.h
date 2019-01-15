@@ -6,6 +6,71 @@
 #include "TimeEventNotifier.h"
 #include "Custom/orbitron_light_11_2.h"
 
+class ScreenArea{
+	public:
+		bool isContain(uint16_t pX, uint16_t pY);
+	protected:
+		uint16_t x;
+		uint16_t y;
+		uint16_t width;
+		uint16_t height;
+};
+
+class TouchObserver: public ScreenArea{
+	public:
+		virtual void execute(){};
+};
+
+template<typename T> 
+class TouchControl: public TouchObserver{
+	typedef void (T::*MemberFn)(); 
+
+	public:
+		TouchControl(){};
+		TouchControl(T* objInstance, MemberFn memberFn){
+			this->memberFn = memberFn;
+			this->objInstance = objInstance;
+		};
+		void setCallbackFunction(T* objInstance, MemberFn memberFn){
+			this->memberFn = memberFn;
+			this->objInstance = objInstance;
+		}
+
+		void execute(){
+			(objInstance->*memberFn)();
+		}
+
+	private:
+		MemberFn memberFn;
+		T* objInstance; 
+};
+
+
+class TouchEventNotifier{
+	protected:
+		static const uint8_t MAX_OBSERVERS = 10;	
+		TouchObserver* observerArr[MAX_OBSERVERS];
+		int8_t cnt=0;
+
+		void notifyObservers(uint16_t touchX, uint16_t touchY);
+		
+	public:
+		bool registerObserver(TouchObserver* observer);
+		void removeObserver(TouchObserver* observer);
+};
+
+class TouchEventHandler: public TouchEventNotifier{
+	private:
+		uint16_t touchCalibrateData[5] =  { 213, 3571, 377, 3516, 4 };
+		TFT_eSPI* tft;
+		uint32_t touchedMillis = millis();
+
+	public:
+		TouchEventHandler(TFT_eSPI* tft);
+		void listenEvent(); 	
+};
+/*
+
 class TouchHelperInterface{
 	public:
 		virtual void execute(){};
@@ -35,7 +100,7 @@ class TouchHelper: public TouchHelperInterface{
 		T* objInstance; 
 
 };
-
+*/
 
 class Screen{
 	protected:
@@ -76,7 +141,7 @@ class MainScreen: public Screen, public SensorObserver, public TimeObserver{
 		
 
 	public:
-		TouchHelper<MainScreen> valamiTouchHelper = TouchHelper<MainScreen>(this, &MainScreen::onValamiTouch);
+		TouchControl<MainScreen> valamiTouchControl = TouchControl<MainScreen>(this, &MainScreen::onValamiTouch);
 
 		MainScreen(TFT_eSPI* tft); 
 		void activate() override;  //Screen interface

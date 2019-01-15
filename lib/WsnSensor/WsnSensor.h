@@ -141,6 +141,7 @@ class SensorScheduler{
 /**********************************
  * SensorObserver 
  * ********************************/
+
 class SensorObserver{
   public:
 
@@ -164,6 +165,7 @@ class SensorEventNotifier{
 		bool registerObserver(SensorObserver* observer);
 		void removeObserver(SensorObserver* observer);
 };
+
 
 /****************************************
  * SensorDataCollector

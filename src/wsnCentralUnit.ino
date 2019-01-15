@@ -7,6 +7,12 @@
 #include "TimeEventNotifier.h"
 #include <TFT_eSPI.h>
 
+/*  tft_eSPI library settings*/
+#define TFT_CS   PIN_D8  // Chip select control pin D8
+#define TFT_DC   PIN_D4  // Data Command control pin
+#define TFT_RST  -1  // Reset pin (could connect to NodeMCU RST, see next line)
+#define TOUCH_CS PIN_D2     // Chip select pin (T_CS) of touch screen
+
 
 #define RADIO_CE_PIN   D3
 #define RADIO_CSN_PIN  D0
@@ -63,9 +69,9 @@ void setup(){
 //timeEventHandler.process();
 
 
-TouchHelperInterface* thi;
+TouchObserver* thi;
 
-thi = &(mainScreen->valamiTouchHelper);
+thi = &(mainScreen->valamiTouchControl);
 
 thi->execute();
 
