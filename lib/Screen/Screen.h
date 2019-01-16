@@ -6,7 +6,7 @@
 
 #include "TFT_eSPI.h"
 #include "WsnSensor.h"
-#include "TimeEventNotifier.h"
+#include "TimeEventHandler.h"
 #include "Custom/orbitron_light_11_2.h"
 
 class Screen{
