@@ -16,6 +16,7 @@
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/TimeEventNotifier",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnCommon",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnSensor",
+                "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/touch",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/.piolibdeps/Adafruit BME280 Library_ID166",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/.piolibdeps/Adafruit Unified Sensor_ID31",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/.piolibdeps/RF24_ID433",
@@ -25,7 +26,6 @@
                 "C:/Users/zoltan.gomori/.platformio/lib/TFT_eSPI_ID1559",
                 "C:/Users/zoltan.gomori/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
                 "C:/Users/zoltan.gomori/.platformio/packages/framework-arduinoespressif8266/libraries/Wire",
-                "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/TouchHelper",
                 "C:/Users/zoltan.gomori/.platformio/lib/Adafruit BME280 Library_ID166",
                 "C:/Users/zoltan.gomori/.platformio/lib/Adafruit Unified Sensor_ID31",
                 "C:/Users/zoltan.gomori/.platformio/lib/Time_ID44",
@@ -55,9 +55,7 @@
                 "C:/Users/zoltan.gomori/.platformio/packages/tool-unity",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/include",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/src",
-                "",
-                "${workspaceFolder}/lib",
-                "${workspaceFolder}/lib/Events"
+                ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
@@ -75,6 +73,7 @@
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/TimeEventNotifier",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnCommon",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnSensor",
+                    "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/touch",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/.piolibdeps/Adafruit BME280 Library_ID166",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/.piolibdeps/Adafruit Unified Sensor_ID31",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/.piolibdeps/RF24_ID433",
@@ -84,7 +83,6 @@
                     "C:/Users/zoltan.gomori/.platformio/lib/TFT_eSPI_ID1559",
                     "C:/Users/zoltan.gomori/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
                     "C:/Users/zoltan.gomori/.platformio/packages/framework-arduinoespressif8266/libraries/Wire",
-                    "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/TouchHelper",
                     "C:/Users/zoltan.gomori/.platformio/lib/Adafruit BME280 Library_ID166",
                     "C:/Users/zoltan.gomori/.platformio/lib/Adafruit Unified Sensor_ID31",
                     "C:/Users/zoltan.gomori/.platformio/lib/Time_ID44",

@@ -1,7 +1,21 @@
 #ifndef TOUCH_EVENT_HANDLER_H
 #define TOUCH_EVENT_HANDLER_H
 
-#include "TouchEventNotifier.h"
+#include "TFT_eSPI.h"
+#include "TouchObserver.h"
+
+class TouchEventNotifier{
+	protected:
+		static const uint8_t MAX_OBSERVERS = 10;	
+		TouchObserver* observerArr[MAX_OBSERVERS];
+		int8_t cnt=0;
+
+		void notifyObservers(uint16_t touchX, uint16_t touchY);
+		
+	public:
+		bool registerObserver(TouchObserver* observer);
+		void removeObserver(TouchObserver* observer);
+};
 
 class TouchEventHandler: public TouchEventNotifier{
 	private:
