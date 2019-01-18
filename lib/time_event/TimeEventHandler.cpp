@@ -48,9 +48,9 @@ TimeEventType::timeElement TimeEventNotifier::getType(){
 }
 
 TimeEventHandler::TimeEventHandler(){
-	 minNotifier = new TimeEventNotifier(TimeEventType::MINUTE);
-	 hourNotifier = new TimeEventNotifier(TimeEventType::HOUR);
-	 dayNotifier = new TimeEventNotifier(TimeEventType::DAY);
+	 this->minNotifier = new TimeEventNotifier(TimeEventType::MINUTE);
+	 this->hourNotifier = new TimeEventNotifier(TimeEventType::HOUR);
+	 this->dayNotifier = new TimeEventNotifier(TimeEventType::DAY);
 
 }
 

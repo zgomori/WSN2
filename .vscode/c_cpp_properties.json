@@ -13,7 +13,6 @@
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/Logger",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/Screen",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/ThingSpeakUtil",
-                "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnCommon",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnSensor",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/time_event",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/touch_event",
@@ -55,7 +54,9 @@
                 "C:/Users/zoltan.gomori/.platformio/packages/tool-unity",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/include",
                 "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/src",
-                ""
+                "",
+                "${workspaceFolder}/lib/WsnLib/WsnCommon",
+                "${workspaceFolder}/lib"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
@@ -70,7 +71,7 @@
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/Logger",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/Screen",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/ThingSpeakUtil",
-                    "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnCommon",
+                    "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnLib/WsnCommon",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/WsnSensor",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/time_event",
                     "c:/Users/zoltan.gomori/Documents/PlatformIO/Projects/WSN2/lib/touch_event",

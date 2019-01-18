@@ -3,10 +3,12 @@
 
 #include "WsnSensor.h"
 #include "Logger.h"
-#include "Screen.h"
+#include "MainScreen.h"
 #include "TouchControl.h"
 #include "TimeEventHandler.h"
+#include "ScreenManager.h"
 #include <TFT_eSPI.h>
+
 
 /*  tft_eSPI library settings*/
 #define TFT_CS   PIN_D8  // Chip select control pin D8
