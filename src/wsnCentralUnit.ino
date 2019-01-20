@@ -47,7 +47,10 @@ SensorDataCollector dataCollector;
 TimeEventHandler timeEventHandler;
 
 
+
 TFT_eSPI tft = TFT_eSPI();
+TouchEventHandler touchEventHandler(&tft);
+
 MainScreen*  mainScreen = new MainScreen(&tft);
 
 //ScreenManager<2> screenManager({new MainScreen(&tft), new MenuScreen(&tft)});

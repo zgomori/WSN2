@@ -8,6 +8,7 @@ void MainScreen::activate(){
 	dataCollector.registerObserver(this);
 	timeEventHandler.registerMinObserver(this);
 	timeEventHandler.registerDayObserver(this);
+	touchEventHandler.registerObserver(&(this->valamiTouchControl));
 
 }
 
@@ -15,6 +16,7 @@ void MainScreen::deactivate(){
 	dataCollector.removeObserver(this);
 	timeEventHandler.removeMinObserver(this);
 	timeEventHandler.removeDayObserver(this);
+	touchEventHandler.removeObserver(&(this->valamiTouchControl));	
 }
 
 void MainScreen::init(){

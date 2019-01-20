@@ -6,6 +6,8 @@
 #include "TouchControl.h"
 #include "WsnSensor.h"
 #include "TimeEventHandler.h"
+#include "TouchEventHandler.h"
+
 #include "Fonts/orbitron_light_11_2.h"
 
 
@@ -50,5 +52,6 @@ class MainScreen: public Screen, public SensorObserver, public TimeObserver{
 
 extern SensorDataCollector dataCollector;
 extern TimeEventHandler timeEventHandler;
+extern TouchEventHandler touchEventHandler; 
 
 #endif

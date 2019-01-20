@@ -9,14 +9,18 @@ class TouchControl: public TouchObserver{
 
 	public:
 		TouchControl(){};
+		
 		TouchControl(T* objInstance, MemberFn memberFn){
 			this->memberFn = memberFn;
 			this->objInstance = objInstance;
 		};
+
 		void setCallbackFunction(T* objInstance, MemberFn memberFn){
 			this->memberFn = memberFn;
 			this->objInstance = objInstance;
 		}
+
+
 
 		void execute(){
 			(objInstance->*memberFn)();
