@@ -4,6 +4,7 @@
 #include "WsnSensor.h"
 #include "Logger.h"
 #include "MainScreen.h"
+#include "MenuScreen.h"
 #include "TouchControl.h"
 #include "TimeEventHandler.h"
 #include "ScreenManager.h"
@@ -46,9 +47,18 @@ SensorDataCollector dataCollector;
 TimeEventHandler timeEventHandler;
 
 
-
 TFT_eSPI tft = TFT_eSPI();
 MainScreen*  mainScreen = new MainScreen(&tft);
+
+//ScreenManager<2> screenManager({new MainScreen(&tft), new MenuScreen(&tft)});
+
+
+
+//Screen* screens[2] = {new MainScreen(&tft), new MenuScreen(&tft)};
+
+Screen* screens[] = {new MainScreen(&tft), new MenuScreen(&tft)};
+ 
+ScreenManager screenManager(screens, sizeof(screens) / sizeof(Screen*));
 
 void setup(){
     Serial.begin(115200);
