@@ -1,8 +1,12 @@
 #include "TouchEventHandler.h"
 
+/*************************
+ * TouchEventNotifier    *
+ * ***********************/
 bool TouchEventNotifier::registerObserver(TouchObserver* observer){
 	if (cnt < MAX_OBSERVERS - 1){
-		observerArr[cnt++] = observer;
+		observerArr[cnt] = observer;
+		++cnt;
 		return true;
 	}
 	else{
@@ -14,7 +18,8 @@ void TouchEventNotifier::removeObserver(TouchObserver* observer){
     uint8_t newIndex = 0;
     for (uint8_t i = 0; i < this->cnt; i++){
         if (this->observerArr[i] != observer) {
-            this->observerArr[newIndex++] = this->observerArr[i];
+            this->observerArr[newIndex] = this->observerArr[i];
+				++newIndex;
         }
     }
 	 this->cnt = newIndex;
@@ -28,8 +33,9 @@ void TouchEventNotifier::notifyObservers(uint16_t touchX, uint16_t touchY){
 	}
 }
 
-
-
+/*************************
+ * TouchEventHandler     *
+ * ***********************/
 TouchEventHandler::TouchEventHandler(TFT_eSPI* tft){
 		this->tft = tft;
 		tft->setTouch(touchCalibrateData);

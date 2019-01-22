@@ -13,35 +13,29 @@ namespace TimeEventType{
 }
 
 
-/**********************************
- * TimeEventNotifier
- * ********************************/
-
+/************************
+ * TimeEventNotifier    *
+ * **********************/
 class TimeEventNotifier{
-	protected:
-		static const uint8_t MAX_OBSERVERS = 5;	
-		TimeObserver* observerArr[MAX_OBSERVERS];
-		int8_t cnt=0;
-		TimeEventType::timeElement type;
-
 	public:
 		TimeEventNotifier(TimeEventType::timeElement type);
 		bool registerObserver(TimeObserver* observer);
 		void removeObserver(TimeObserver* observer);
 		void notifyObservers(time_t currentTime);
 		TimeEventType::timeElement getType();
+
+	protected:
+		static const uint8_t MAX_OBSERVERS = 5;	
+		TimeObserver* observerArr[MAX_OBSERVERS] = {NULL};
+		int8_t cnt=0;
+		TimeEventType::timeElement type;
 };
 
+
+/************************
+ * TimeEventHandler     *
+ * **********************/
 class TimeEventHandler{
-	private:
-		TimeEventNotifier* minNotifier;
-		TimeEventNotifier* hourNotifier;
-		TimeEventNotifier* dayNotifier;
-
-		int8_t lastMin  = -1;
-		int8_t lastHour = -1;
-		int8_t lastDay  = -1;
-
 	public:
 		TimeEventHandler();
 		bool registerMinObserver(TimeObserver* observer);
@@ -53,6 +47,15 @@ class TimeEventHandler{
 		void removeDayObserver(TimeObserver* observer);
 
 		void process();
+
+	private:
+		TimeEventNotifier* minNotifier;
+		TimeEventNotifier* hourNotifier;
+		TimeEventNotifier* dayNotifier;
+
+		int8_t lastMin  = -1;
+		int8_t lastHour = -1;
+		int8_t lastDay  = -1;
 };
 
 

@@ -20,9 +20,7 @@ class TouchControl: public TouchObserver{
 			this->objInstance = objInstance;
 		}
 
-
-
-		void execute(){
+		void execute() override /* TouchObserver */ {
 			(objInstance->*memberFn)();
 		}
 

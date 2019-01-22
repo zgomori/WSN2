@@ -1,13 +1,16 @@
 #include "TimeEventHandler.h"
 
-
+/************************
+ * TimeEventNotifier    *
+ ************************/ 
 TimeEventNotifier::TimeEventNotifier(TimeEventType::timeElement type){
 	this->type = type;
 }
 
 bool TimeEventNotifier::registerObserver(TimeObserver* observer){
 	if (cnt < MAX_OBSERVERS - 1){
-		observerArr[cnt++] = observer;
+		observerArr[cnt] = observer;
+		++cnt;
 		return true;
 	}
 	else{
@@ -19,7 +22,8 @@ void TimeEventNotifier::removeObserver(TimeObserver* observer){
     uint8_t newIndex = 0;
     for (uint8_t i = 0; i < this->cnt; i++){
         if (this->observerArr[i] != observer) {
-            this->observerArr[newIndex++] = this->observerArr[i];
+            this->observerArr[newIndex] = this->observerArr[i];
+				++newIndex;
         }
     }
 	 this->cnt = newIndex;
@@ -47,11 +51,13 @@ TimeEventType::timeElement TimeEventNotifier::getType(){
 	return this->type;
 }
 
+/************************
+ * TimeEventHandler     *
+ ************************/ 
 TimeEventHandler::TimeEventHandler(){
 	 this->minNotifier = new TimeEventNotifier(TimeEventType::MINUTE);
 	 this->hourNotifier = new TimeEventNotifier(TimeEventType::HOUR);
 	 this->dayNotifier = new TimeEventNotifier(TimeEventType::DAY);
-
 }
 
 bool TimeEventHandler::registerMinObserver(TimeObserver* observer){
