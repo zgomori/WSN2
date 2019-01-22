@@ -1,7 +1,6 @@
 #include "LogWriter.h"
 
 /*!
-
 **** Wildcards
 
 * %s	replace with an string (char*)
@@ -16,14 +15,16 @@
 * %T	like %t but convert into "true" or "false"
 */
 
-
+/*******************
+ * LogWriter       *
+ *******************/
 void LogWriter::print(const char *format, va_list args) {
 	for (; *format != 0; ++format) {
 		if (*format == '%') {
 			++format;
 			printFormat(*format, &args);
 		} else {
-			_logOutput->print(*format);
+			logOutput->print(*format);
 		}
 		yield();
 	}
@@ -33,80 +34,80 @@ void LogWriter::printFormat(const char format, va_list *args) {
 	if (format == '\0') return;
 
 	if (format == '%') {
-		_logOutput->print(format);
+		logOutput->print(format);
 		return;
 	}
 
 	if( format == 's' ) {
 		register char *s = (char *)va_arg( *args, int );
-		_logOutput->print(s);
+		logOutput->print(s);
 		return;
 	}
 
 	if( format == 'S' ) {
 		register __FlashStringHelper *s = (__FlashStringHelper *)va_arg( *args, int );
-		_logOutput->print(s);
+		logOutput->print(s);
 		return;
 	}
   
 	if( format == 'd' || format == 'i') {
-		_logOutput->print(va_arg( *args, int ),DEC);
+		logOutput->print(va_arg( *args, int ),DEC);
 		return;
 	}
 
 	if( format == 'D' || format == 'F') {
-		_logOutput->print(va_arg( *args, double ));
+		logOutput->print(va_arg( *args, double ));
 		return;
 	}
 
 	if( format == 'x' ) {
-		_logOutput->print(va_arg( *args, int ),HEX);
+		logOutput->print(va_arg( *args, int ),HEX);
 		return;
 	}
 
 	if( format == 'X' ) {
-		_logOutput->print("0x");
-		_logOutput->print(va_arg( *args, int ),HEX);
+		logOutput->print("0x");
+		logOutput->print(va_arg( *args, int ),HEX);
 		return;
 	}
 
 	if( format == 'b' ) {
-		_logOutput->print(va_arg( *args, int ),BIN);
+		logOutput->print(va_arg( *args, int ),BIN);
 		return;
 	}
 
 	if( format == 'B' ) {
-		_logOutput->print("0b");
-		_logOutput->print(va_arg( *args, int ),BIN);
+		logOutput->print("0b");
+		logOutput->print(va_arg( *args, int ),BIN);
 		return;
 	}
 
 	if( format == 'l' ) {
-		_logOutput->print(va_arg( *args, long ),DEC);
+		logOutput->print(va_arg( *args, long ),DEC);
 		return;
 	}
 
 	if( format == 'c' ) {
-		_logOutput->print((char) va_arg( *args, int ));
+		logOutput->print((char) va_arg( *args, int ));
 		return;
 	}
 
 	if( format == 't' ) {
 		if (va_arg( *args, int ) == 1) {
-			_logOutput->print("T");
+			logOutput->print("T");
 		}
 		else {
-			_logOutput->print("F");
+			logOutput->print("F");
 		}
 		return;
 	}
 
 	if( format == 'T' ) {
 		if (va_arg( *args, int ) == 1) {
-		_logOutput->print(F("true"));
+		logOutput->print(F("true"));
 	}
 	else {
-		_logOutput->print(F("false"));
+		logOutput->print(F("false"));
 	}
 		return;
 	}
@@ -118,25 +119,31 @@ void LogWriter::printDateTime(){
 
 	sprintf(timeBuffer, "%u.%02u.%02u %02u:%02u:%02u ", year(ct), month(ct), day(ct), hour(ct), minute(ct), second(ct) );
 
-	_logOutput->print(timeBuffer);
+	logOutput->print(timeBuffer);
 }
 
+/*******************
+ * SerialLogWriter *
+ *******************/
 SerialLogWriter::SerialLogWriter(Stream* logOutput){
-	_logOutput = logOutput;
+	this->logOutput = logOutput;
 }
 
+/*******************
+ * UdpLogWriter    *
+ *******************/
 UdpLogWriter::UdpLogWriter(WiFiUDP* udp, char* ipAddress, uint remotePort){
-	this->_logOutput = udp;
-	this->_ipAddress = ipAddress;
-	this->_remotePort = remotePort;
+	this->logOutput = udp;
+	this->ipAddress = ipAddress;
+	this->remotePort = remotePort;
 }
 
 void UdpLogWriter::beginLogEntry(){
-	static_cast<WiFiUDP*>(_logOutput)->beginPacket(_ipAddress, _remotePort);
+	static_cast<WiFiUDP*>(logOutput)->beginPacket(ipAddress, remotePort);
 	yield();
 }
 
 void UdpLogWriter::endLogEntry(){
-	static_cast<WiFiUDP*>(_logOutput)->endPacket();
+	static_cast<WiFiUDP*>(logOutput)->endPacket();
 	delay(2);
 }
