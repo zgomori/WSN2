@@ -6,7 +6,6 @@
 #include "stdarg.h"
 #include "time.h"
 
-//extern const char* LOG_LEVEL_NAMES[];
 
 /*******************
  * LogWriter       *

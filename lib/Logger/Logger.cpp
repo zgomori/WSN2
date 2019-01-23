@@ -1,7 +1,5 @@
 #include "Logger.h"
 
-//const char* LOG_LEVEL_NAMES[] = {"FATAL", "ERROR", "WARN ", "INFO ", "DEBUG"};
-
 Logger::Logger(){
 	this->level = -1;
 	this->logWriter = new DummyLogWriter();
