@@ -1,9 +1,6 @@
-/*
-Based on  https://github.com/thijse/Arduino-Log
-*/
 #include "Logger.h"
 
-const char* LOG_LEVEL_NAMES[] = {"FATAL", "ERROR", "WARN ", "INFO ", "DEBUG"};
+//const char* LOG_LEVEL_NAMES[] = {"FATAL", "ERROR", "WARN ", "INFO ", "DEBUG"};
 
 Logger::Logger(){
 	this->level = -1;

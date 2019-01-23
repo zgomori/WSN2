@@ -10,7 +10,7 @@ SensorReadStatus Sensor::getStatus(){
 	return this->lastReadStatus;
 }
 
-SensorType Sensor::getSensorType(){
+SENSOR_TYPE Sensor::getSensorType(){
 	return this->sensorType;
 }
 

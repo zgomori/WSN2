@@ -6,7 +6,7 @@
 #include "stdarg.h"
 #include "time.h"
 
-extern const char* LOG_LEVEL_NAMES[];
+//extern const char* LOG_LEVEL_NAMES[];
 
 /*******************
  * LogWriter       *
@@ -31,8 +31,10 @@ class LogWriter{
 		}
 
 	protected:
-		Print* logOutput;
+		const char* LOG_LEVEL_NAMES[5] = {"FATAL", "ERROR", "WARN ", "INFO ", "DEBUG"};
 
+		Print* logOutput;
+	
 		LogWriter(){};
 
 		virtual void print(const char *format, va_list args);

@@ -13,7 +13,7 @@
 #include "Logger.h"
 
 
-enum SensorStatusCode: int8_t{
+enum SENSOR_STATUS_CODE: int8_t{
 	NO_DATA_CHANGED = 0,
 	NEW_DATA_ARRIVED = 1,
 	BME_SENSOR_ERROR = -1,
@@ -21,7 +21,7 @@ enum SensorStatusCode: int8_t{
 	THING_SPEAK_READ_ERROR = -3
 }; 
 
-enum SensorType: uint8_t{
+enum SENSOR_TYPE: uint8_t{
 	UNDEFINED_SENSOR = 0,
 	LOCAL_SENSOR = 1,
 	RADIO_SENSOR = 2,
@@ -30,7 +30,7 @@ enum SensorType: uint8_t{
 
 struct SensorReadStatus{
 	int8_t nodeId;
-	SensorStatusCode statusCode;
+	SENSOR_STATUS_CODE statusCode;
 	char statusMessage[50]; 
 };
 
@@ -49,92 +49,89 @@ struct SensorData{
  * Sensor (Abstract Class)
  ****************************************/
 class Sensor{
-	protected:
-	SensorType sensorType = UNDEFINED_SENSOR;
-	SensorReadStatus lastReadStatus;
-	
 	public:
-	Sensor();
-	virtual SensorReadStatus read(SensorData &sensorDataOut);
-	SensorReadStatus getStatus();
-	SensorType getSensorType();
+		Sensor();
+		virtual SensorReadStatus read(SensorData &sensorDataOut);
+		SensorReadStatus getStatus();
+		SENSOR_TYPE getSensorType();
+
+	protected:
+		SENSOR_TYPE sensorType = SENSOR_TYPE::UNDEFINED_SENSOR;
+		SensorReadStatus lastReadStatus;
 };
 
 /****************************************
  * BMESensorAdapter
  ****************************************/
 class BMESensorAdapter : public Sensor{
-	private:
-	Adafruit_BME280 *bme;
-	float elevation;
-	int8_t nodeId;
-	uint32_t messageCount;
-	byte sensorSet; 
-
 	public:
-	BMESensorAdapter(Adafruit_BME280 *bme, const float elevation, const int8_t nodeId);
-	SensorReadStatus read(SensorData &sensorDataOut);
+		BMESensorAdapter(Adafruit_BME280 *bme, const float elevation, const int8_t nodeId);
+		SensorReadStatus read(SensorData &sensorDataOut);
+
+	private:
+		Adafruit_BME280 *bme;
+		float elevation;
+		int8_t nodeId;
+		uint32_t messageCount;
+		byte sensorSet; 
 };	
 
 /****************************************
  * RadioSensorListener
  ****************************************/
 class RadioSensorListener : public Sensor{
-	private:
-	RF24 *radio = NULL;
-	void sensorMessage2sensorData(WsnSensorNodeMessage &in, SensorData &out);
-
 	public:
+		RadioSensorListener(RF24 *radio);
+		SensorReadStatus read(SensorData &sensorDataOut);
 
-	RadioSensorListener(RF24 *radio);
-	SensorReadStatus read(SensorData &sensorDataOut);
+	private:
+		RF24 *radio = NULL;
+		void sensorMessage2sensorData(WsnSensorNodeMessage &in, SensorData &out);
 };	
 
 /****************************************
  * ThingSpeakSensor
  ****************************************/
 class ThingSpeakSensor : public Sensor{
-	private:
-
-	const char* thingSpeakAddress;
-	int8_t nodeId;
-	const char *readKey;
-	const char *channel;
-	const int8_t *fieldMapping;
-	byte sensorSet = 0; 
-	ThingSpeakUtil thingSpeakUtil;
-
-	void json2SensorData(char* jsonString, SensorData &sensorDataOut);
-	void getJsonFieldValue(char* jsonString, int8_t fieldNo, char* dst);
-
 	public:
-	ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const int8_t *fieldMapping);
-	SensorReadStatus read(SensorData &sensorDataOut);
+		ThingSpeakSensor(WiFiClient *client, const char* thingSpeakAddress, const int8_t nodeId, const char* readKey, const char *channel, const int8_t *fieldMapping);
+		SensorReadStatus read(SensorData &sensorDataOut);
+	private:
+		const char* thingSpeakAddress;
+		int8_t nodeId;
+		const char *readKey;
+		const char *channel;
+		const int8_t *fieldMapping;
+		byte sensorSet = 0; 
+		ThingSpeakUtil thingSpeakUtil;
+
+		void json2SensorData(char* jsonString, SensorData &sensorDataOut);
+		void getJsonFieldValue(char* jsonString, int8_t fieldNo, char* dst);
 };	
 
 /****************************************
  * SensorScheduler
  ****************************************/
 class SensorScheduler{
-	private:
-	struct ScheduledSensor{
-		Sensor* sensor;
-		uint32_t repeatMs;
-		uint32_t lastRead;
-	};
-
-	static const uint8_t MAX_SCHEDULED_SENSORS = 5; 
-	ScheduledSensor taskArr[MAX_SCHEDULED_SENSORS];
-	uint8_t taskCnt = 0;
-	uint8_t execIdx = 0; 
-
-	void recalcExecIdx();
-
 	public:
-	SensorScheduler();
-	bool addTask(Sensor* sensor, uint32_t repeatMs);
-	SensorReadStatus execute(SensorData &sensorDataOut);
-	uint8_t getTaskCnt();
+		SensorScheduler();
+		bool addTask(Sensor* sensor, uint32_t repeatMs);
+		SensorReadStatus execute(SensorData &sensorDataOut);
+		uint8_t getTaskCnt();
+
+	private:
+		static const uint8_t MAX_SCHEDULED_SENSORS = 5;
+		
+		struct ScheduledSensor{
+			Sensor* sensor;
+			uint32_t repeatMs;
+			uint32_t lastRead;
+		};
+		ScheduledSensor taskArr[MAX_SCHEDULED_SENSORS];
+		uint8_t taskCnt = 0;
+		uint8_t execIdx = 0; 
+
+		void recalcExecIdx();
 };
 
 
@@ -144,7 +141,6 @@ class SensorScheduler{
 
 class SensorObserver{
   public:
-
     virtual void onSensorChange(SensorData* sensorData);
 };
 
@@ -154,16 +150,16 @@ class SensorObserver{
  * ********************************/
 
 class SensorEventNotifier{
+	public:
+		bool registerObserver(SensorObserver* observer);
+		void removeObserver(SensorObserver* observer);
+
 	protected:
 		static const uint8_t MAX_OBSERVERS = 5;	
 		SensorObserver* observerArr[MAX_OBSERVERS];
 		int8_t cnt=0;
 
 		void notifyObservers(SensorData* sensorData);
-		
-	public:
-		bool registerObserver(SensorObserver* observer);
-		void removeObserver(SensorObserver* observer);
 };
 
 
@@ -171,26 +167,25 @@ class SensorEventNotifier{
  * SensorDataCollector
  ****************************************/
 class SensorDataCollector : public SensorEventNotifier{
-	struct ScheduledSensor{
-		Sensor* sensor;
-		uint32_t repeatMs;
-		uint32_t lastRead;
-	};
+	public:
+		SensorDataCollector();
+		void setRadioSensor(RadioSensorListener* radioSensor);
+		bool addSensor(Sensor* sensor, uint32_t repeatMs);
+		SensorReadStatus process();
+		SensorReadStatus getStatus();
+		SensorData getSensorData(uint8_t nodeId);
 
 	private:
-	RadioSensorListener* radioSensor;
-	SensorScheduler sensorScheduler;
+		struct ScheduledSensor{
+			Sensor* sensor;
+			uint32_t repeatMs;
+			uint32_t lastRead;
+		};
 
-	SensorData sensorDataArr[10];
-	SensorReadStatus lastSensorReadStatus;
-	
-	public:
-	SensorDataCollector();
-	void setRadioSensor(RadioSensorListener* radioSensor);
-	bool addSensor(Sensor* sensor, uint32_t repeatMs);
-	SensorReadStatus process();
-	SensorReadStatus getStatus();
-	SensorData getSensorData(uint8_t nodeId);
+		RadioSensorListener* radioSensor;
+		SensorScheduler sensorScheduler;
+		SensorData sensorDataArr[10];
+		SensorReadStatus lastSensorReadStatus;
 };	
 
 extern time_t now(); 
