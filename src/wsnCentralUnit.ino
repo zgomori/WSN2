@@ -53,15 +53,11 @@ TouchEventHandler touchEventHandler(&tft);
 
 MainScreen*  mainScreen = new MainScreen(&tft);
 
-//ScreenManager<2> screenManager({new MainScreen(&tft), new MenuScreen(&tft)});
-
-
-
-//Screen* screens[2] = {new MainScreen(&tft), new MenuScreen(&tft)};
 
 Screen* screens[] = {new MainScreen(&tft), new MenuScreen(&tft)};
- 
 ScreenManager screenManager(screens, sizeof(screens) / sizeof(Screen*));
+
+
 
 void setup(){
     Serial.begin(115200);

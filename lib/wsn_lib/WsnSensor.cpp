@@ -272,11 +272,9 @@ uint8_t SensorScheduler::getTaskCnt(){
 	return taskCnt;
 }
 
-
 /**********************************
  * SensorEventNotifier
  * ********************************/
-
 bool SensorEventNotifier::registerObserver(SensorObserver* observer){
 	if (cnt < MAX_OBSERVERS - 1){
 		observerArr[cnt++] = observer;

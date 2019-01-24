@@ -138,7 +138,6 @@ class SensorScheduler{
 /**********************************
  * SensorObserver 
  * ********************************/
-
 class SensorObserver{
   public:
     virtual void onSensorChange(SensorData* sensorData);
@@ -148,7 +147,6 @@ class SensorObserver{
 /**********************************
  * SensorEventNotifier
  * ********************************/
-
 class SensorEventNotifier{
 	public:
 		bool registerObserver(SensorObserver* observer);
@@ -176,15 +174,17 @@ class SensorDataCollector : public SensorEventNotifier{
 		SensorData getSensorData(uint8_t nodeId);
 
 	private:
+		static const uint8_t SENSOR_DATA_ARR_SIZE = 10;
+
 		struct ScheduledSensor{
 			Sensor* sensor;
 			uint32_t repeatMs;
 			uint32_t lastRead;
 		};
-
+		
 		RadioSensorListener* radioSensor;
 		SensorScheduler sensorScheduler;
-		SensorData sensorDataArr[10];
+		SensorData sensorDataArr[SENSOR_DATA_ARR_SIZE];
 		SensorReadStatus lastSensorReadStatus;
 };	
 

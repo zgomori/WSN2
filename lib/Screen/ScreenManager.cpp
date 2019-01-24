@@ -1,6 +1,5 @@
 #include "ScreenManager.h"
 
-
 //public:
 ScreenManager::ScreenManager(Screen* screens[], uint8_t screenArrSize){
 	this->screenArr = screens;
