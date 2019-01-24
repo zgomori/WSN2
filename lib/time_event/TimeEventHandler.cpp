@@ -84,7 +84,7 @@ void TimeEventHandler::removeDayObserver(TimeObserver* observer){
 	this->dayNotifier->removeObserver(observer);
 }
 
-void TimeEventHandler::process(){
+void TimeEventHandler::readEvent(){
 	time_t ct = now();
 
 	if (minute(ct) != this->lastMin){

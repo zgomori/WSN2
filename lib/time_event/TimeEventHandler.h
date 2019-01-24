@@ -46,7 +46,7 @@ class TimeEventHandler{
 		void removeHourObserver(TimeObserver* observer);
 		void removeDayObserver(TimeObserver* observer);
 
-		void process();
+		void readEvent();
 
 	private:
 		TimeEventNotifier* minNotifier;

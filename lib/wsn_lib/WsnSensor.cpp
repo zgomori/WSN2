@@ -49,7 +49,9 @@ SensorReadStatus BMESensorAdapter::read(SensorData &sensorDataOut){
 		sensorDataOut.temperature = temp;
 		sensorDataOut.humidity = humidity;
 		sensorDataOut.airPressure = pressure;
-		sensorDataOut.messageCount = this->messageCount++;
+		sensorDataOut.messageCount = this->messageCount;
+
+		++messageCount;
 
 		lastReadStatus.statusCode = NEW_DATA_ARRIVED;
 		strcpy(lastReadStatus.statusMessage, "");
@@ -174,19 +176,19 @@ void ThingSpeakSensor::json2SensorData(char* jsonString, SensorData &sensorDataO
 			getJsonFieldValue(jsonString, fieldNo,  jsonValue);
 
 			switch(i) {
-   			case WSN_TEMPERATURE :
+   			case WSN::TEMPERATURE :
       			sensorDataOut.temperature = atof(jsonValue);
       			break;
-   			case WSN_HUMIDITY :
+   			case WSN::HUMIDITY :
       			sensorDataOut.humidity = atof(jsonValue);
       			break;
-   			case WSN_PRESSURE :
+   			case WSN::PRESSURE :
       			sensorDataOut.airPressure = atof(jsonValue);
       			break;
-   			case WSN_BATTERY :
+   			case WSN::BATTERY :
       			sensorDataOut.batteryVoltage = atof(jsonValue);
       			break;
-   			case WSN_MESSAGES :
+   			case WSN::MESSAGES :
       			sensorDataOut.messageCount = atof(jsonValue);
       			break;
 			}	 

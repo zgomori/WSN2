@@ -34,44 +34,39 @@
 
 WsnReceiverConfig cfg;
 
+
 WiFiClient client;
 WiFiUDP udp;
-Logger Log;
 
 Adafruit_BME280     bme(BME_CS); // hardware SPI
 RF24                radio(RADIO_CE_PIN, RADIO_CSN_PIN);
 
+TFT_eSPI tft = TFT_eSPI();
+
+
+Logger Log;
 
 SensorDataCollector dataCollector;
-
 TimeEventHandler timeEventHandler;
-
-
-
-TFT_eSPI tft = TFT_eSPI();
 TouchEventHandler touchEventHandler(&tft);
-
-MainScreen*  mainScreen = new MainScreen(&tft);
-
 
 Screen* screens[] = {new MainScreen(&tft), new MenuScreen(&tft)};
 ScreenManager screenManager(screens, sizeof(screens) / sizeof(Screen*));
 
 
-
 void setup(){
-    Serial.begin(115200);
-	Serial.println("START");	
+	Serial.begin(115200);
 	 
-	 readConfig(cfg);
+	readConfig(cfg);
 	checkWifiConnection(cfg);
 
 //	 Log.init(LOG_LEVEL::DEBUG, &Serial);
 	 Log.init(LOG_LEVEL::DEBUG, &udp, "10.100.1.25", 5678);
 
 	
-/*
-	dataCollector.setRadioSensor(RadioSensorListener(&radio));
+
+	dataCollector.setRadioSensor(new RadioSensorListener(&radio));
+/*	
 	dataCollector.addSensor(BMESensorAdapter(&bme, 200, 0), 60000);
 
 	WsnTSnodeConfig *c =  &cfg.tsNodeConfigArr[0];
@@ -81,12 +76,13 @@ void setup(){
 //timeEventHandler.process();
 
 
+/*
 TouchObserver* thi;
 
 thi = &(mainScreen->valamiTouchControl);
 
 thi->execute();
-
+*/
 
 
 Serial.println("START LOG");
@@ -145,7 +141,9 @@ Serial.println(micros()-m);
 }
 
 void loop(){
-	
+	timeEventHandler.readEvent();
+	touchEventHandler.readEvent();
+
 }
 
 void readConfig(WsnReceiverConfig &_cfg){  
@@ -170,18 +168,18 @@ void readConfig(WsnReceiverConfig &_cfg){
   strcpy(_cfg.tsNodeConfigArr[0].name, "Peti");
   strcpy(_cfg.tsNodeConfigArr[0].thingSpeakReadKey, "9ZTPTLMLNFU8VZU3");
   strcpy(_cfg.tsNodeConfigArr[0].thingSpeakChannel, "340091");
-  _cfg.tsNodeConfigArr[0].fieldMapping[WSN_TEMPERATURE] = 1;
-  _cfg.tsNodeConfigArr[0].fieldMapping[WSN_HUMIDITY] = 2;
+  _cfg.tsNodeConfigArr[0].fieldMapping[WSN::TEMPERATURE] = 1;
+  _cfg.tsNodeConfigArr[0].fieldMapping[WSN::HUMIDITY] = 2;
   _cfg.tsNodeConfigArr[0].nodeID = 6;
   _cfg.tsNodeConfigArr[0].readFrequencyMs = 61000L;
 
   strcpy(_cfg.tsNodeConfigArr[1].name, "Central");
   strcpy(_cfg.tsNodeConfigArr[1].thingSpeakReadKey, "JXWWMBZMQZNRMOJK");
   strcpy(_cfg.tsNodeConfigArr[1].thingSpeakChannel, "528401");
-  _cfg.tsNodeConfigArr[1].fieldMapping[WSN_TEMPERATURE] = 1;
-  _cfg.tsNodeConfigArr[1].fieldMapping[WSN_HUMIDITY] = 2;
-  _cfg.tsNodeConfigArr[1].fieldMapping[WSN_PRESSURE] = 3;
-  _cfg.tsNodeConfigArr[1].fieldMapping[WSN_MESSAGES] = 4;
+  _cfg.tsNodeConfigArr[1].fieldMapping[WSN::TEMPERATURE] = 1;
+  _cfg.tsNodeConfigArr[1].fieldMapping[WSN::HUMIDITY] = 2;
+  _cfg.tsNodeConfigArr[1].fieldMapping[WSN::PRESSURE] = 3;
+  _cfg.tsNodeConfigArr[1].fieldMapping[WSN::MESSAGES] = 4;
   _cfg.tsNodeConfigArr[1].nodeID = 7;
   _cfg.tsNodeConfigArr[1].readFrequencyMs = 60000L;
 

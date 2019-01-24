@@ -20,7 +20,7 @@ class TouchEventNotifier{
 class TouchEventHandler: public TouchEventNotifier{
 	public:
 		TouchEventHandler(TFT_eSPI* tft);
-		void listenEvent(); 	
+		void readEvent(); 	
 
 	private:
 		uint16_t touchCalibrateData[5] =  { 213, 3571, 377, 3516, 4 };
