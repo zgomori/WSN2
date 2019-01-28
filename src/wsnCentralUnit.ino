@@ -149,10 +149,8 @@ void loop(){
 void readConfig(WsnReceiverConfig &_cfg){  
   _cfg.radioNetworkAddress = 0xA0A0A0FFLL;
   _cfg.radioChannel = 101;
-//  strcpy(_cfg.wifiSsid, "wxIoT");
-//  strcpy(_cfg.wifiPass,"tXgbYPy6DzYaO-U4");
-  strcpy(_cfg.wifiSsid, "wx");
-  strcpy(_cfg.wifiPass,"BuMeu8238UPC");
+  strcpy(_cfg.wifiSsid, "wxIoT");
+  strcpy(_cfg.wifiPass,"tXgbYPy6DzYaO-U4");
 
 	strcpy(_cfg.ntpServerName, "time.google.com");
 	_cfg.timeZone = 1;
